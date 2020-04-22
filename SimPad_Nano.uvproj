@@ -449,6 +449,9 @@
             </File>
           </Files>
         </Group>
+        <Group>
+          <GroupName>Public</GroupName>
+        </Group>
       </Groups>
     </Target>
     <Target>
@@ -893,6 +896,9 @@
               <FilePath>_SimPad Nano ES\PinMap.h</FilePath>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>Public</GroupName>
         </Group>
       </Groups>
     </Target>
