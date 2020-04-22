@@ -378,6 +378,13 @@
         </Group>
         <Group>
           <GroupName>SimPad Nano Anniversary Edition</GroupName>
+          <Files>
+            <File>
+              <FileName>PinMap.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>SimPad Nano AE\PinMap.h</FilePath>
+            </File>
+          </Files>
         </Group>
       </Groups>
     </Target>

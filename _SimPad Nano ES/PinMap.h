@@ -16,7 +16,7 @@ Header file for SimPad Nano pinmap.
 extern "C" {
 #endif
 
-sbit WS2812_Data = P1^4; // WS2812 信号引脚
+sbit ws2812_data = P1^4; // WS2812 信号引脚
 
 sbit BT1 = P1^7; // 默认设置 Z
 sbit BT2 = P1^5; // 默认设置 X
