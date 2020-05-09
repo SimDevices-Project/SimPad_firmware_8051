@@ -394,6 +394,11 @@
               <FileType>1</FileType>
               <FilePath>.\Public\IIC\I2C.C</FilePath>
             </File>
+            <File>
+              <FileName>SPI_M.C</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Public\SPI\SPI_M.C</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
