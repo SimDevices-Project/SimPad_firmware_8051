@@ -3,6 +3,13 @@
 
 xdata unsigned char I2C_Buf;
 
+/**
+ * PinMap must be like
+ * sbit sda_pin = P1^1;
+ * sbit scl_pin = P1^0;
+ * 
+ */
+
 #define I2C_SDA()	(sda_pin==1)
 #define I2C_SDA_H()	{sda_pin = 1;}
 #define I2C_SDA_L()	{sda_pin = 0;}
