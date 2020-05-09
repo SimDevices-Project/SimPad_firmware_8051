@@ -7,7 +7,7 @@ Header file for SimPad Nano Anniversary Edition pinmap.
 ****************************************
 --------------------------------------------------------------------------*/
 
-#include "Public/CH552.H"
+#include "Public/Core/CH552.H"
 
 #ifndef __PIN_MAP__
 #define __PIN_MAP__
