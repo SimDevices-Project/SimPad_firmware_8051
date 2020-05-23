@@ -384,6 +384,11 @@
               <FileType>5</FileType>
               <FilePath>.\SimPad Nano AE\PinMap.h</FilePath>
             </File>
+            <File>
+              <FileName>UsbDescriptor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\SimPad Nano AE\UsbDescriptor.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -393,11 +398,6 @@
               <FileName>I2C.C</FileName>
               <FileType>1</FileType>
               <FilePath>.\Public\IIC\I2C.C</FilePath>
-            </File>
-            <File>
-              <FileName>SPI_M.C</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Public\SPI\SPI_M.C</FilePath>
             </File>
           </Files>
         </Group>
