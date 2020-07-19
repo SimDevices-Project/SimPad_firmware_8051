@@ -276,10 +276,10 @@ void __usbDeviceInterrupt() __interrupt (INT_NO_USB) __using (1) {
 											break;
                                         case 0x22:                                          //报表描述符
                                             if (UsbSetupBuf->wIndexL == 0) {                //接口0报表描述符
-                                                pDescr = KeyRepDesc;                        //数据准备上传
+                                                pDescr = (uint8_t*) KeyRepDesc;             //数据准备上传
                                                 len = sizeof(KeyRepDesc);
                                             } else if (UsbSetupBuf->wIndexL == 1) {         //接口1报表描述符
-                                                pDescr = MouseRepDesc;                      //数据准备上传
+                                                pDescr = (uint8_t*) MouseRepDesc;           //数据准备上传
                                                 len = sizeof(MouseRepDesc);                                
                                             } else {
                                                 len = 0xff;                                 //本程序只有2个接口，这句话正常不可能执行
@@ -471,18 +471,18 @@ void usbDevInit() {
     UDEV_CTRL &= ~bUD_LOW_SPEED;                                               //选择全速12M模式，默认方式
     USB_CTRL &= ~bUC_LOW_SPEED;
 	
-    UEP0_DMA = 0x0000;                                                  //端点0数据传输地址
-    UEP4_1_MOD &= ~(bUEP1_RX_EN | bUEP1_TX_EN);                                //端点0单64字节收发缓冲区
-    UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;                                 //OUT事务返回ACK，IN事务返回NAK
-    UEP1_DMA = 0x000A;                                                  //端点1数据传输地址
-    UEP4_1_MOD = UEP4_1_MOD & ~bUEP1_BUF_MOD | bUEP1_TX_EN;                    //端点1发送使能 64字节缓冲区
-    UEP1_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK;                                 //端点1自动翻转同步标志位，IN事务返回NAK	
-    UEP2_DMA = 0x004C;                                                  //端点2数据传输地址
-    UEP2_3_MOD = UEP2_3_MOD & ~bUEP2_BUF_MOD | bUEP2_TX_EN;                    //端点2发送使能 64字节缓冲区
-    UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK;                                 //端点2自动翻转同步标志位，IN事务返回NAK   
-    UEP3_DMA = 0x008E;                                                  //端点3数据传输地址
-    UEP4_1_MOD = UEP4_1_MOD & ~bUEP3_BUF_MOD | bUEP3_TX_EN;                    //端点3发送使能 128字节缓冲区
-    UEP3_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK | UEP_T_RES_NAK;                 //端点3自动翻转同步标志位，IN事务返回NAK
+    UEP0_DMA = 0x0000;                                                          //端点0数据传输地址
+    UEP4_1_MOD &= ~(bUEP1_RX_EN | bUEP1_TX_EN);                                 //端点0单64字节收发缓冲区
+    UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;                                  //OUT事务返回ACK，IN事务返回NAK
+    UEP1_DMA = 0x000A;                                                          //端点1数据传输地址
+    UEP4_1_MOD = UEP4_1_MOD & ~bUEP1_BUF_MOD | bUEP1_TX_EN;                     //端点1发送使能 64字节缓冲区
+    UEP1_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK;                                  //端点1自动翻转同步标志位，IN事务返回NAK	
+    UEP2_DMA = 0x004C;                                                          //端点2数据传输地址
+    UEP2_3_MOD = UEP2_3_MOD & ~bUEP2_BUF_MOD | bUEP2_TX_EN;                     //端点2发送使能 64字节缓冲区
+    UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK;                                  //端点2自动翻转同步标志位，IN事务返回NAK   
+    UEP3_DMA = 0x008E;                                                          //端点3数据传输地址
+    UEP4_1_MOD = UEP4_1_MOD & ~bUEP3_BUF_MOD | bUEP3_TX_EN;                     //端点3发送使能 128字节缓冲区
+    UEP3_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK | UEP_T_RES_NAK;                  //端点3自动翻转同步标志位，IN事务返回NAK
 
 	USB_DEV_AD = 0x00;
 	USB_CTRL |= bUC_DEV_PU_EN | bUC_INT_BUSY | bUC_DMA_EN;                      // 启动USB设备及DMA，在中断期间中断标志未清除前自动返回NAK
