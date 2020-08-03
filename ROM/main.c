@@ -38,8 +38,13 @@ void main() {
         delay_us(10);
         val |= (BT1 != 0 ? 0 : 0x01);
         val |= (BT2 != 0 ? 0 : 0x02);
+    #if defined(SIMPAD_V2)
         usbSetKeycode(2, BT1 != 0 ? 0 : 13);    // KEY_J
         usbSetKeycode(3, BT2 != 0 ? 0 : 14);    // KEY_K
+    #elif defined(SIMPAD_NANO)
+        usbSetKeycode(2, BT1 != 0 ? 0 : 7);     // KEY_D
+        usbSetKeycode(3, BT2 != 0 ? 0 : 9);     // KEY_F
+    #endif
 
         if (val != prevKey) {
             prevKey = val;
@@ -51,11 +56,18 @@ void main() {
         usbSetKeycode(0, 2);                    // Report ID 2
         usbSetKeycode(2, 0);
         val = 0;
+    #if defined(SIMPAD_V2)
         BT3 = 1; BT4 = 1; BT5 = 1;
         delay_us(10);
              if (BT3 == 0) val = 0xB6;          // KEY_PREV
         else if (BT4 == 0) val = 0xCD;          // KEY_PLAY
         else if (BT5 == 0) val = 0xB5;          // KEY_NEXT
+    #elif defined(SIMPAD_NANO)
+        BT3 = 1;
+        delay_us(10);
+        if (BT3 == 0) val = 0xCD;               // KEY_PLAY
+    #endif
+        
         if (val > 0) {
             usbSetKeycode(1, val);
             usbPushKeydata();

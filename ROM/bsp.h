@@ -1,7 +1,8 @@
 #ifndef __BSP_H
 #define __BSP_H
 
-#define SIMPAD_V2
+//#define SIMPAD_V2
+#define SIMPAD_NANO
 
 __sfr   __at (0x90) P1;
 __sbit  __at (0x90) P10;
@@ -33,7 +34,7 @@ __sbit  __at (0xB7) P37;
     #define BT5 P30
 #elif defined(SIMPAD_NANO)
     #define BT1 P15
-    #define BT2 P10
+    #define BT2 P17
     #define BT3 P16
     #define BT4 NP
     #define BT5 NP

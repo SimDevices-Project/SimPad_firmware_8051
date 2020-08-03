@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ch552.h"
+#include "bsp.h"
 
 #define THIS_ENDP0_SIZE DEFAULT_ENDP0_SIZE
 
@@ -26,7 +27,13 @@ const uint8_c usbDevDesc[] = {
     * 00 07 SimPad Nano - Year Edition
     * 00 FF SimPad Boot
     */
+#if defined(SIMPAD_V2)
     0x06, 0x00,         // 产品ID
+#elif defined(SIMPAD_NANO)
+    0x04, 0x00,         // 产品ID
+#else
+    0x00, 0x00,
+#endif
     0x01, 0x02,         // 设备版本号 (2.1)
     0x01,               // 描述厂商信息的字符串描述符的索引值
     0x02,               // 描述产品信息的字串描述符的索引值
@@ -222,7 +229,14 @@ const uint8_c CustomRepDesc[] = {
 
 const uint8_c usbLangDesc[] = { 0x04, 0x03, 0x04, 0x08 };
 const uint8_c usbManuDesc[] = { 0x0A, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0 };
-const uint8_c usbProdDesc[] = { 0x14, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'V', 0, '2', 0 };
+#if defined(SIMPAD_V2)
+    const uint8_c usbProdDesc[] = { 0x14, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'V', 0, '2', 0 };
+#elif defined(SIMPAD_NANO)
+    const uint8_c usbProdDesc[] = { 0x18, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'N', 0, 'a', 0, 'n', 0, 'o', 0 };
+#else
+    const uint8_c usbProdDesc[] = { 0x18, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'N', 0, 'u', 0, 'l', 0, 'l', 0 };
+#endif
+
 const uint8_c usbSerialDesc[] = { 0x0A, 0x03, '0', 0, '0', 0, '0', 0, '0', 0 };
 const uint8_c usbCfgStrDesc[] = { 0x12, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' ', 0, 'U', 0, 'S', 0, 'B', 0 };
 const uint8_c usbKeyStrDesc[] = { 0x18, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' ', 0, 'K', 0, 'e', 0, 'y', 0, 'p', 0, 'a', 0, 'd', 0 };
