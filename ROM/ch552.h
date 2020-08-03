@@ -374,7 +374,7 @@ __sfr   __at (0xCB)         RCAP2H;     // high byte of reload & capture value
 __sfr16 __at (0xCDCC)       T2COUNT;    // counter, little-endian
 __sfr   __at (0xCC)         TL2;        // low byte of timer 2 count
 __sfr   __at (0xCD)         TH2;        // high byte of timer 2 count
-__sfr16 __at (0xCFCE)         T2CAP1;     // ReadOnly: capture 1 value for timer2
+__sfr16 __at (0xCFCE)       T2CAP1;     // ReadOnly: capture 1 value for timer2
 __sfr   __at (0xCE)         T2CAP1L;    // ReadOnly: capture 1 value low byte for timer2
 __sfr   __at (0xCF)         T2CAP1H;    // ReadOnly: capture 1 value high byte for timer2
 

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define	 FREQ_SYS       12000000	        //系统主频12MHz
+#define	 FREQ_SYS       24000000	        //系统主频24MHz
 #define  OSC_EN_XT      0                   //外部晶振使能，默认开启内部晶振
 
 void	sysClockConfig();                   //时钟选择和配置

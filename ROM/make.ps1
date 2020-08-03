@@ -1,16 +1,20 @@
 echo "clean outputs..."
-if ((ls ./out/) -ne $null) {
+if (Test-Path "./out/") {
     rm -r ./out/
 }
-mkdir ./out/
+$null = mkdir ./out/
 
+$main = "main.c"
 $hex = "./out/main.hex"
 $bin = "./out/main.bin"
 
-$sources = ls *.c;
+$sources = ls *.c
 if ($sources -ne $null) {
     echo "compiling sources..."
     foreach ($s in $sources) {
+        if ($s -match $main) {
+            continue
+        }
         echo "CC: $s"
         sdcc -mmcs51 -c $s -o ./out/
     }
@@ -18,7 +22,7 @@ if ($sources -ne $null) {
     $objs = ls ./out/*.rel
     if ($objs -ne $null) {
         echo "linking objects..."
-        sdcc $objs -o $hex
+        sdcc $main $objs -o $hex
         echo "making binary..."
         makebin $hex $bin
 
