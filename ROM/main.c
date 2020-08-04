@@ -3,6 +3,8 @@
 #include "usb.h"
 #include "bsp.h"
 
+#include "nsvm.h"
+
 void __usbDeviceInterrupt() __interrupt (INT_NO_USB) __using (1);
 extern uint8_t FLAG;
 
