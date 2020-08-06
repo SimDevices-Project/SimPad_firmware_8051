@@ -45,7 +45,7 @@ void updateFir() {
 }
 
 __bit fir(uint8_t index) {
-    return (firResult[index % FIR_SIZE] > sizeof(fir_type) / 2) && 
+    return (firResult[index % FIR_SIZE] > sizeof(fir_type) * 4) &&
            (firBuffer[index % FIR_SIZE] & 0x1 != 0);
 }
 
