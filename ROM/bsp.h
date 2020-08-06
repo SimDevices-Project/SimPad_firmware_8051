@@ -1,8 +1,8 @@
 #ifndef __BSP_H
 #define __BSP_H
 
-//#define SIMPAD_V2
-#define SIMPAD_NANO
+#define SIMPAD_V2
+//#define SIMPAD_NANO
 
 __sfr   __at (0x90) P1;
 __sbit  __at (0x90) P10;

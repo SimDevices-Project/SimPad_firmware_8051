@@ -23,14 +23,14 @@
 #define CVM_VARLEN_OP
 //#define CVM_LONGLEN_OP
 
-#define CVM_ret        uint8_t
+#define cvm_ret        uint8_t
 #define CVM_RET_END    0xFF
 #define CVM_RET_RST    0xFE
 
 #define CVM_RET_OK     0x00
 #define CVM_RET_ERR    0x01
 
-#define CVM_addr       uint32_t
+#define cvm_addr       uint32_t
 
 /* ---------------- 配置区域结束 ---------------- */
 
@@ -79,14 +79,14 @@ typedef struct {
 
 #ifdef CVM_LONGLEN_OP
 #define CVM_OP CVM_OP_L
-typedef uint32_t CVM_arg;
+typedef uint32_t cvm_arg;
 #else
 #define CVM_OP CVM_OP_S
-typedef uint16_t CVM_arg;
+typedef uint16_t cvm_arg;
 #endif
 
 typedef struct {
-    CVM_ret (*func)(CVM_OP* op);
+    cvm_ret (*func)(CVM_OP* op);
 #ifdef CVM_VARLEN_OP
     uint8_t length;
 #endif
@@ -106,22 +106,22 @@ typedef struct {
 #endif
 
 #if CVM_FUNC_MAX <= 0xFF
-typedef uint8_t CVM_opi;
+typedef uint8_t cvm_opi;
 #else
-typedef uint16_t CVM_opi;
+typedef uint16_t cvm_opi;
 #endif
 
 typedef struct {
     char msg[16];
-    CVM_addr addr;
+    cvm_addr addr;
     CVM_OP op;
 } CVM_ERR_INFO;
 
-CVM_ERR_INFO* CVM_err_info();
+CVM_ERR_INFO* cvm_err_info();
 
-void CVM_jmp(CVM_addr addr);
-CVM_ret CVM_exe(CVM_OP* op);
-CVM_ret CVM_run(uint8_t* code, CVM_addr length);
+void cvm_jmp(cvm_addr addr);
+cvm_ret cvm_exe(CVM_OP* op);
+cvm_ret cvm_run(uint8_t* code, cvm_addr length);
 
 
 #endif
