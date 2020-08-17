@@ -1,12 +1,15 @@
 #include "ch552.h"
 #include "sys.h"
 #include "usb.h"
+#include "rgb.h"
 #include "bsp.h"
 
 #include "cvm.h"
 
 void __usbDeviceInterrupt() __interrupt (INT_NO_USB) __using (1);
 extern uint8_t FLAG;
+
+void __rgbTim2Interrupt() __interrupt (INT_NO_TMR2) __using (2);
 
 volatile __bit control = 0;
 volatile uint8_t prevKey = 0;
@@ -31,7 +34,7 @@ void updateFir() {
     delay_us(10);
     firBuffer[0] <<= 1; firBuffer[0] |= !BT1;
     firBuffer[1] <<= 1; firBuffer[1] |= !BT2;
-#if defined(SIMPAD_V2)
+#if (defined(SIMPAD_V2_AE) || defined(SIMPAD_V2))
     BT3 = 1; BT4 = 1; BT5 = 1;
     delay_us(10);
     firBuffer[2] <<= 1; firBuffer[2] |= !BT3;
@@ -54,12 +57,8 @@ void main() {
     delay(5);
 
     usbDevInit();
+    rgbInit();
     EA = 1;
-    UEP1_T_LEN = 0;
-    UEP2_T_LEN = 0;
-    UEP3_T_LEN = 0;
-
-    FLAG = 1;
 
     delay(500);
     usbReleaseAll();
@@ -78,7 +77,7 @@ void main() {
         uint8_t val = 0;
         val |= (fir(0) ? 0x01 : 0);
         val |= (fir(1) ? 0x02 : 0);
-    #if defined(SIMPAD_V2)
+    #if (defined(SIMPAD_V2_AE) || defined(SIMPAD_V2))
         usbSetKeycode(2, fir(0) ? 13 : 0);      // KEY_J
         usbSetKeycode(3, fir(1) ? 14 : 0);      // KEY_K
     #elif defined(SIMPAD_NANO)
@@ -96,7 +95,7 @@ void main() {
         usbSetKeycode(0, 2);                    // Report ID 2
         usbSetKeycode(2, 0);
         val = 0;
-    #if defined(SIMPAD_V2)
+    #if (defined(SIMPAD_V2_AE) || defined(SIMPAD_V2))
              if (fir(2)) val = 0xB6;            // KEY_PREV
         else if (fir(3)) val = 0xCD;            // KEY_PLAY
         else if (fir(4)) val = 0xB5;            // KEY_NEXT

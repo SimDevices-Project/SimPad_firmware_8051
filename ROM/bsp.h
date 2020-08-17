@@ -1,8 +1,9 @@
 #ifndef __BSP_H
 #define __BSP_H
 
-#define SIMPAD_V2
+//#define SIMPAD_V2_AE
 //#define SIMPAD_NANO
+#define SIMPAD_V2
 
 __sfr   __at (0x90) P1;
 __sbit  __at (0x90) P10;
@@ -26,7 +27,7 @@ __sbit  __at (0xB7) P37;
 
 #define NP ((void*)(-1))
 
-#if defined(SIMPAD_V2)
+#if defined(SIMPAD_V2_AE)
     #define BT1 P33
     #define BT2 P32
     #define BT3 P34
@@ -38,6 +39,18 @@ __sbit  __at (0xB7) P37;
     #define BT3 P16
     #define BT4 NP
     #define BT5 NP
+#elif defined(SIMPAD_V2)
+    #define BT1 P32
+    #define BT2 P33
+    #define BT3 P11
+    #define BT4 P10
+    #define BT5 P34
+    #define G1R P15
+    #define G1G P16
+    #define G1B P14
+    #define G2R P13
+    #define G2G P12
+    #define G2B P17
 #else
     #error "No board defined!"
 #endif
