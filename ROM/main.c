@@ -13,6 +13,7 @@ void __rgbTim2Interrupt() __interrupt (INT_NO_TMR2) __using (2);
 
 volatile __bit control = 0;
 volatile uint8_t prevKey = 0;
+volatile uint8_i color = 0, step = 0;
 
 typedef uint16_t fir_type;
 #define FIR_SIZE 5
@@ -52,6 +53,31 @@ __bit fir(uint8_t index) {
            (firBuffer[index % FIR_SIZE] & 0x1 != 0);
 }
 
+void rainbow(uint8_t index, uint8_t step, uint8_t color) {
+    switch (step) {
+    case 0:
+        rgbSet(index, 0xFF0000 | ((uint32_t) color << 8));
+        break;
+    case 1:
+        rgbSet(index, 0x00FF00 | ((uint32_t) (0xFF - color) << 16));
+        break;
+    case 2:
+        rgbSet(index, 0x00FF00 | color);
+        break;
+    case 3:
+        rgbSet(index, 0x0000FF | ((uint32_t) (0xFF - color) << 8));
+        break;
+    case 4:
+        rgbSet(index, 0x0000FF | ((uint32_t) color << 16));
+        break;
+    case 5:
+        rgbSet(index, 0xFF0000 | (0xFF - color));
+        break;
+    default:
+        break;
+    }
+}
+
 void main() {
     sysClockConfig();
     delay(5);
@@ -59,11 +85,6 @@ void main() {
     usbDevInit();
     rgbInit();
     EA = 1;
-
-    delay(500);
-    usbReleaseAll();
-    usbPushKeydata();
-    requestHIDData();
 
     #if defined(SIMPAD_V2)
         rgbSet(0, 0x66CCFF);
@@ -76,9 +97,12 @@ void main() {
     #elif defined(SIMPAD_NANO_AE)
         rgbSet(0, 0x66CCFF);
         rgbSet(1, 0xFF9800);
-        rgbSet(2, 0x66CCFF);
-        rgbSet(3, 0xFF9800);
     #endif
+
+    delay(500);
+    usbReleaseAll();
+    usbPushKeydata();
+    requestHIDData();
 
     while (1) {
         updateFir();
@@ -106,9 +130,6 @@ void main() {
         }
         
         // Multimedia keypad
-        usbReleaseAll();
-        usbSetKeycode(0, 2);                    // Report ID 2
-        usbSetKeycode(2, 0);
         val = 0;
     #if (defined(SIMPAD_V2_AE) || defined(SIMPAD_V2))
              if (fir(2)) val = 0xB6;            // KEY_PREV
@@ -119,6 +140,14 @@ void main() {
     #endif
         
         if (val > 0) {
+            usbReleaseAll();
+            usbSetKeycode(0, 1);                // Report ID 1
+            usbPushKeydata();
+            delay(50);
+
+            usbReleaseAll();
+            usbSetKeycode(0, 2);                // Report ID 2
+            usbSetKeycode(2, 0);
             usbSetKeycode(1, val);
             usbPushKeydata();
             delay(100);
@@ -133,6 +162,16 @@ void main() {
             pushHIDData();
             requestHIDData();
         }
+
+        rainbow(0, step, color);
+        rainbow(1, step, color);
+    #if defined(SIMPAD_V2_AE)
+        rainbow(2, step, color);
+        rainbow(3, step, color);
+    #endif
+        step += (color == 0 ? 1 : 0);
+        step %= 5;
+        color += 1;
 
         rgbPush();
     }
