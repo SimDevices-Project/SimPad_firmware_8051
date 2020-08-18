@@ -48,6 +48,7 @@ void rgbSet(uint8_t index, uint32_t value) {
 #endif
 }
 
+#if !defined(SIMPAD_V2)
 void __ws_rst() {
     LED = 0;
     delay_us(500);
@@ -75,6 +76,7 @@ void __ws_send(uint32_t value) {
         value <<= 1;
     }
 }
+#endif
 
 void rgbPush() {
 #if !defined(SIMPAD_V2)
