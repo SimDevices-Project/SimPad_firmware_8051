@@ -8,12 +8,12 @@
 #include <string.h>
 
 static __code CVM_FUNC cvmFuncList[CVM_FUNC_MAX];
-static uint32_t cvmProgCnt = 0;
+static __idata uint32_t cvmProgCnt = 0;
 
 #define CVM_JMP_DUMMY  0xFFFFFFFF
-static uint32_t cvmJmpAddr = CVM_JMP_DUMMY;
+static __idata uint32_t cvmJmpAddr = CVM_JMP_DUMMY;
 
-static CVM_ERR_INFO cvmErrInfo;
+static __idata CVM_ERR_INFO cvmErrInfo;
 
 CVM_ERR_INFO* cvm_err_info() {
     return &cvmErrInfo;

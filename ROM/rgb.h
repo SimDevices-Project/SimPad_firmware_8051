@@ -5,5 +5,6 @@
 
 void rgbInit();
 void rgbSet(uint8_t index, uint32_t value);
+void rgbPush();
 
 #endif

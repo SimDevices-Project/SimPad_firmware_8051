@@ -29,7 +29,7 @@ const uint8_c usbDevDesc[] = {
     */
 #if defined(SIMPAD_V2_AE)
     0x06, 0x00,         // 产品ID
-#elif defined(SIMPAD_NANO)
+#elif defined(SIMPAD_NANO_AE)
     0x04, 0x00,         // 产品ID
 #elif defined(SIMPAD_V2)
     0x01, 0x00,         // 产品ID
@@ -233,10 +233,10 @@ const uint8_c usbLangDesc[] = { 0x04, 0x03, 0x04, 0x08 };
 const uint8_c usbManuDesc[] = { 0x0A, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0 };
 #if defined(SIMPAD_V2_AE)
     const uint8_c usbProdDesc[] = { 0x1A, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'V', 0, '2', 0, ' ', 0, 'A', 0, 'E', 0 };
-#elif defined(SIMPAD_NANO)
-    const uint8_c usbProdDesc[] = { 0x18, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'N', 0, 'a', 0, 'n', 0, 'o', 0 };
+#elif defined(SIMPAD_NANO_AE)
+    const uint8_c usbProdDesc[] = { 0x1C, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'N', 0, 'a', 0, 'n', 0, 'o', 0, ' ', 0, 'A', 0, 'E', 0 };
 #elif defined(SIMPAD_V2)
-    const uint8_c usbProdDesc[] = { 0x14, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'V', 0, '2' };
+    const uint8_c usbProdDesc[] = { 0x14, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'V', 0, '2', 0 };
 #else
     const uint8_c usbProdDesc[] = { 0x18, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'N', 0, 'u', 0, 'l', 0, 'l', 0 };
 #endif
@@ -247,7 +247,8 @@ const uint8_c usbKeyStrDesc[] = { 0x18, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' 
 const uint8_c usbMseStrDesc[] = { 0x16, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' ', 0, 'M', 0, 'o', 0, 'u', 0, 's', 0, 'e', 0 };
 const uint8_c usbCusStrDesc[] = { 0x18, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' ', 0, 'C', 0, 'u', 0, 's', 0, 't', 0, 'o', 0, 'm', 0 };
 
-#define OFFSET (0x400 - 0x156);
+#define OFFSET (0x0000)
+//#define OFFSET (0x400 - 0x156)
 uint8_x __at (OFFSET + 0x0000) Ep0Buffer[THIS_ENDP0_SIZE];                                  //端点0 OUT&IN缓冲区，必须是偶地址
 uint8_x __at (OFFSET + 0x0008) Ep1Buffer[MAX_PACKET_SIZE];                                  //端点1 IN缓冲区,必须是偶地址
 uint8_x __at (OFFSET + 0x0048) Ep2Buffer[MAX_PACKET_SIZE];                                  //端点2 IN缓冲区,必须是偶地址
@@ -269,6 +270,7 @@ volatile __bit      HIDIN = 0;
 #define UsbSetupBuf ((PUSB_SETUP_REQ)Ep0Buffer)
 
 void __usbDeviceInterrupt() __interrupt (INT_NO_USB) __using (1) {
+    ET2 = 0;
     uint8_t i, len;
 	if (UIF_TRANSFER) {                                                                     // USB传输完成
 		switch (USB_INT_ST & (MASK_UIS_TOKEN | MASK_UIS_ENDP)) {                            // 分析操作令牌和端点号
@@ -562,6 +564,7 @@ void __usbDeviceInterrupt() __interrupt (INT_NO_USB) __using (1) {
 	} else {                                                                                                        // 意外的中断,不可能发生的情况
 		USB_INT_FG = 0xFF;                                                                                          // 清中断标志
 	}
+    ET2 = 1;
 }
 
 void usbDevInit() {
@@ -591,6 +594,7 @@ void usbDevInit() {
 	USB_INT_FG = 0xFF;                                                          // 清中断标志
 	USB_INT_EN = bUIE_SUSPEND | bUIE_TRANSFER | bUIE_BUS_RST;
 	IE_USB = 1;
+    IP_EX |= bIP_USB;
 
     UEP1_T_LEN = 0;
     UEP2_T_LEN = 0;

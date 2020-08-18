@@ -20,13 +20,13 @@ if ($sources -ne $null) {
             continue
         }
         echo "CC: $s"
-        sdcc --std-c11 -mmcs51 --model-medium --iram-size $iram --xram-size $xram --code-size $code -c $s -o ./out/
+        sdcc --std-c11 -mmcs51 --model-small --iram-size $iram --xram-size $xram --code-size $code -c $s -o ./out/
     }
     
     $objs = ls ./out/*.rel
     if ($objs -ne $null) {
         echo "linking objects..."
-        sdcc --std-c11 -mmcs51 --model-medium --iram-size $iram --xram-size $xram --code-size $code $main $objs -o $hex
+        sdcc --std-c11 -mmcs51 --model-small --iram-size $iram --xram-size $xram --code-size $code $main $objs -o $hex
         echo "making binary..."
         makebin -s $code $hex $bin
 
