@@ -10,10 +10,13 @@ volatile uint8_i RGBS[2][2][3];
 volatile uint32_i rgbGRBData[LED_COUNT];
 #endif
 
-void __rgbTim2Interrupt() __interrupt (INT_NO_TMR2) __using (2) {
+#if defined(SIMPAD_V2)
+extern volatile uint32_t sysTickCount;
+volatile uint8_i __tick_cnt = 0;
+void __tim2Interrupt() __interrupt (INT_NO_TMR2) __using (2) {
     if (TF2) {
         TF2 = 0;
-    #if defined(SIMPAD_V2)
+
         RGBS[0][0][0] += 1; RGBS[0][0][1] += 1; RGBS[0][0][2] += 1;
         RGBS[1][0][0] += 1; RGBS[1][0][1] += 1; RGBS[1][0][2] += 1;
         G1R = RGBS[0][0][0] > RGBS[0][1][0];
@@ -22,14 +25,20 @@ void __rgbTim2Interrupt() __interrupt (INT_NO_TMR2) __using (2) {
         G2R = RGBS[1][0][0] > RGBS[1][1][0];
         G2G = RGBS[1][0][1] > RGBS[1][1][1];
         G2B = RGBS[1][0][2] > RGBS[1][1][2];
-    #endif
+
+        if (__tick_cnt < 61) __tick_cnt += 1;
+        else {
+            __tick_cnt = 0;
+            sysTickCount += 1;
+        }
     }
 }
+#endif
 
 void rgbInit() {
 #if defined(SIMPAD_V2)
     T2MOD |= (bTMR_CLK | bT2_CLK);
-    RCAP2 = T2COUNT = 0xFFFF - (390);   // 240fps;
+    RCAP2 = T2COUNT = 0xFFFF - (uint16_t) (FREQ_SYS / (256L * 240L));   // 240fps, 61400Hz
     TR2 = 1;
     ET2 = 1;
 #else
