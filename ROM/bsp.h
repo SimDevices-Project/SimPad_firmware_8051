@@ -6,6 +6,8 @@
 //#define SIMPAD_V2
 //#define SIMPAD_NANO
 
+//#define RGB_USE_GRAD_LIST
+
 __sfr   __at (0x90) P1;
 __sbit  __at (0x90) P10;
 __sbit  __at (0x91) P11;

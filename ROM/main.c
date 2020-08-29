@@ -72,8 +72,7 @@ void main() {
         uint8_t ctrlKey = 0;
         __bit hasCtrlKey = 0;
         for (i = 0; i < KEY_COUNT; i++) {
-            switch (cfg->keyConfig[i].mode) {
-            case KeyNone:
+            if (cfg->keyConfig[i].mode == KeyNone) {
                 usbSetKeycode(0, 1);
                 usbSetKeycode(1, 0);
                 if (!cfg->keyConfig[i].marco) {
@@ -85,8 +84,7 @@ void main() {
                 }
                 if (prevKey != nowKey)
                     usbPushKeydata();
-                break;
-            case KeyDown:
+            } else {
                 usbReleaseAll();
                 usbSetKeycode(0, 1);
                 usbPushKeydata();
@@ -94,45 +92,25 @@ void main() {
                 usbPushKeydata();
                 usbReleaseAll();
                 if (cfg->keyConfig[i].marco) {
-                    if ((prevKey & (0x01 << i)) == 0 && (nowKey & (0x01 << i)) != 0) {
-                        runKey = i;
-                        cvm_run(cfg->keyConfig[i].program, cfg->keyConfig[i].length);
-                        runKey = 0xFF;
+                    if (cfg->keyConfig[i].mode == KeyPress) {
+                        if (fir(i)) {
+                            runKey = i | 0x80;
+                            cvm_run(cfg->keyConfig[i].program, cfg->keyConfig[i].length);
+                            runKey = 0xFF;
+                        }
+                    } else {
+                        __bit trig = 0;
+                        if (cfg->keyConfig[i].mode == KeyDown)
+                            trig = (prevKey & (0x01 << i)) == 0 && (nowKey & (0x01 << i)) != 0;
+                        else
+                            trig = (prevKey & (0x01 << i)) != 0 && (nowKey & (0x01 << i)) == 0;
+                        if (trig) {
+                            runKey = i;
+                            cvm_run(cfg->keyConfig[i].program, cfg->keyConfig[i].length);
+                            runKey = 0xFF;
+                        }
                     }
                 }
-                break;
-            case KeyUp:
-                usbReleaseAll();
-                usbSetKeycode(0, 1);
-                usbPushKeydata();
-                usbSetKeycode(0, 2);
-                usbPushKeydata();
-                usbReleaseAll();
-                if (cfg->keyConfig[i].marco) {
-                    if ((prevKey & (0x01 << i)) != 0 && (nowKey & (0x01 << i)) == 0) {
-                        runKey = i;
-                        cvm_run(cfg->keyConfig[i].program, cfg->keyConfig[i].length);
-                        runKey = 0xFF;
-                    }
-                }
-                break;
-            case KeyPress:
-                usbReleaseAll();
-                usbSetKeycode(0, 1);
-                usbPushKeydata();
-                usbSetKeycode(0, 2);
-                usbPushKeydata();
-                usbReleaseAll();
-                if (cfg->keyConfig[i].marco) {
-                    if (fir(i)) {
-                        runKey = i | 0x80;
-                        cvm_run(cfg->keyConfig[i].program, cfg->keyConfig[i].length);
-                        runKey = 0xFF;
-                    }
-                }
-                break;
-            default:
-                break;
             }
         }
 

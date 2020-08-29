@@ -10,7 +10,7 @@ $bin = "./out/main.bin"
 
 $iram = 256
 $xram = 1024
-$code = 0x3800
+$code = 0x3000
 $xram_start = 0x0108 # 这里要看usb.c内的DMA缓冲区结束地址
 
 $sources = ls *.c

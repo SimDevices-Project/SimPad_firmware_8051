@@ -627,14 +627,11 @@ void Enp3IntIn( ) {
 }
 
 void usbSetKeycode(uint8_t i, uint8_t key) {
-    uint8_t len = sizeof(HIDKey);
-    i = i % len;
     HIDKey[i] = key;
 }
 
 void usbReleaseAll() {
-    uint8_t len = sizeof(HIDKey);
-    for (uint8_t i = 0; i < len; i++)
+    for (uint8_t i = 0; i < sizeof(HIDKey); i++)
         HIDKey[i] = 0x00;
 }
 
@@ -653,11 +650,11 @@ void usbPushKeydata() {
 }
 
 uint8_t getHIDData(uint8_t index) {
-    return HIDInput[index % sizeof(HIDInput)];
+    return HIDInput[index];
 }
 
 void setHIDData(uint8_t index, uint8_t data) {
-    HIDOutput[index % sizeof(HIDOutput)] = data;
+    HIDOutput[index] = data;
 }
 
 __bit hasHIDData() {
