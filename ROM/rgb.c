@@ -5,14 +5,14 @@
 
 #if defined(SIMPAD_V2)
 // [index][count: 0, control: 1][red: 0, green: 1, blue: 2]
-volatile uint8_i RGBS[2][2][3];
+static uint8_i RGBS[2][2][3];
 #else
-volatile uint32_i rgbGRBData[LED_COUNT];
+static uint32_i rgbGRBData[LED_COUNT];
 #endif
 
 #if defined(SIMPAD_V2)
 extern volatile uint32_t sysTickCount;
-volatile uint8_i __tick_cnt = 0;
+volatile uint8_t __tick_cnt = 0;
 void __tim2Interrupt() __interrupt (INT_NO_TMR2) __using (2) {
     if (TF2) {
         TF2 = 0;
@@ -98,11 +98,13 @@ void rgbPush() {
 #endif
 }
 
-volatile __xdata RGBConfig __at (LED_FADE_ADDR) fadeConfig[LED_COUNT];
+static __xdata RGBConfig fadeConfig[LED_COUNT];
 volatile uint16_i fadeLength = 0;
 
 void rgbSetLed(uint16_t index, uint16_t value) {
-    rgbSet(index & 0xFF, sysGetRGB(value, (index >> 8) & 0xFF));
+    fadeConfig[index & 0xFF].length = 0;
+    fadeConfig[index & 0xFF].nodes[0].color = sysGetRGB(value, (index >> 8) & 0xFF);
+    rgbSet(index & 0xFF, fadeConfig[index & 0xFF].nodes[0].color);
 }
 
 void rgbSetTime(uint16_t time) {
@@ -180,11 +182,11 @@ __bit __rgb__trig(uint8_t index) {
 
 volatile uint8_i trigCtl = 0, trigSte = 0;
 volatile uint32_i prevTickCount = 0;
-volatile uint8_i r, g, b;
 
 #define NODE(i) (CFG(i).nodes[CFG(i).step % CFG(i).length])
 
-uint8_i __rgb__inter(uint8_t index, uint8_t input, int16_t total, uint16_t time) {
+#ifdef USE_GRAD_LIST
+uint8_t __rgb__inter(uint8_t index, uint8_t input, int16_t total, uint16_t time) {
     int8_t sign = total > 0 ? 1 : -1;
     uint8_t d = (uint16_t) (sign * total) / time;
     if (d == 0) {
@@ -197,11 +199,14 @@ uint8_i __rgb__inter(uint8_t index, uint8_t input, int16_t total, uint16_t time)
     }
     return input;
 }
+#endif
 
 void rgbUpdate() {
+    uint32_i c = 0;
     for (uint8_t i = 0; i < LED_COUNT; i++) {
         switch (CFG(i).mode) {
         case LEDNone:
+        #ifdef USE_GRAD_LIST
             if (__rgb__trig(i) && (trigSte & (0x01 << i)) == 0) {
                 trigSte |= (0x01 << i);
                 trigCtl |= (0x01 << i);
@@ -213,44 +218,52 @@ void rgbUpdate() {
                 trigCtl &= ~(0x01 << i);
                 CFG(i).step = 0;
                 CFG(i).time = 0;
-                r = g = b = 0;
+                CFG(i).r = CFG(i).g = CFG(i).b = 0;
             }
 
             if (CFG(i).time == 0) {
                 CFG(i).time = sysGetTickCount();
-                r = (NODE(i).color >> 16) & 0xFF;
-                g = (NODE(i).color >> 8 ) & 0xFF;
-                b = (NODE(i).color >> 0 ) & 0xFF;
+                CFG(i).r = (NODE(i).color >> 16) & 0xFF;
+                CFG(i).g = (NODE(i).color >> 8 ) & 0xFF;
+                CFG(i).b = (NODE(i).color >> 0 ) & 0xFF;
             }
 
             if (NODE(i).length != 0) {
-                uint8_t rt = 0, gt = 0, bt = 0;
+                uint8_x rt = 0, gt = 0, bt = 0;
                 rt = (NODE(i + 1).color >> 16) & 0xFF - (NODE(i).color >> 16) & 0xFF;
                 gt = (NODE(i + 1).color >> 8 ) & 0xFF - (NODE(i).color >> 8 ) & 0xFF;
                 bt = (NODE(i + 1).color >> 0 ) & 0xFF - (NODE(i).color >> 0 ) & 0xFF;
-                r = __rgb__inter(i, r, rt, NODE(i).length);
-                g = __rgb__inter(i, g, gt, NODE(i).length);
-                b = __rgb__inter(i, b, bt, NODE(i).length);
-                rgbSet(i, ((uint32_t) r) << 16 | ((uint32_t) g) << 8 | (uint32_t) b);
+                CFG(i).r = __rgb__inter(i, CFG(i).r, rt, NODE(i).length);
+                CFG(i).g = __rgb__inter(i, CFG(i).g, gt, NODE(i).length);
+                CFG(i).b = __rgb__inter(i, CFG(i).b, bt, NODE(i).length);
+                c |= ((uint32_t) CFG(i).r) << 16;
+                c |= ((uint32_t) CFG(i).g) << 8;
+                c |= CFG(i).b;
+                rgbSet(i, c);
 
                 if (sysGetTickCount() - CFG(i).time > NODE(i).length) {
                     CFG(i).step += 1;
                     CFG(i).time = 0;
-                    r = g = b = 0;
+                    CFG(i).r = CFG(i).g = CFG(i).b = 0;
                     if (CFG(i).step == CFG(i).length)
                         CFG(i).step = 0;
                 }
             } else
                 rgbSet(i, NODE(i).color);
+        #else
+            rgbSet(i, NODE(i).color);
+        #endif
             break;
         case LEDRGB:
-            rgbSet(i, __rgb__rainbow(CFG(i).step, CFG(i).count));
+            c = __rgb__rainbow(CFG(i).step, CFG(i).count);
+            rgbSet(i, c);
             CFG(i).step += (CFG(i).count == 0 ? 1 : 0);
             CFG(i).step = CFG(i).step > 5 ? 0 : CFG(i).step;
             CFG(i).count += 1;
             break;
         case LEDBGR:
-            rgbSet(i, __rgb__rainbow(CFG(i).step, CFG(i).count));
+            c = __rgb__rainbow(CFG(i).step, CFG(i).count);
+            rgbSet(i, c);
             CFG(i).step -= (CFG(i).count == 0 ? 1 : 0);
             CFG(i).step = CFG(i).step > 5 ? 5 : CFG(i).step;
             CFG(i).count -= 1;
@@ -267,12 +280,14 @@ void rgbUpdate() {
             }
 
             if ((trigCtl & (0x01 << i)) != 0) {
-                rgbSet(i, __rgb__rainbow(CFG(i).step, CFG(i).count));
+                c = __rgb__rainbow(CFG(i).step, CFG(i).count);
+                rgbSet(i, c);
                 CFG(i).step += (CFG(i).count == 0 ? 1 : 0);
                 CFG(i).step = CFG(i).step > 5 ? 0 : CFG(i).step;
                 CFG(i).count += 1;
             } else {
-                rgbSet(i, __rgb__rainbow(CFG(i).step, CFG(i).count));
+                c = __rgb__rainbow(CFG(i).step, CFG(i).count);
+                rgbSet(i, c);
                 CFG(i).step -= (CFG(i).count == 0 ? 1 : 0);
                 CFG(i).step = CFG(i).step > 5 ? 5 : CFG(i).step;
                 CFG(i).count -= 1;

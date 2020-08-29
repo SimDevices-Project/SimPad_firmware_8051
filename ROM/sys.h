@@ -9,7 +9,6 @@
 #define	 FREQ_SYS       24000000	        // 系统主频24MHz
 #define  OSC_EN_XT      0                   // 外部晶振使能，默认开启内部晶振
 #define  MARCO_MAX      48                  // 单个宏指令大小
-#define  SYS_CFG_A      0x0202              // 系统配置存储起始地址（xRAM），需确认LED渐变列表占用后的结束地址
 
 void	sysClockConfig();                   // 时钟选择和配置
 void	delay_us(uint16_t n);               // 以uS为单位延时
@@ -42,5 +41,6 @@ typedef struct {
 
 uint32_t sysGetRGB(uint16_t color, uint8_t extend);
 void sysLoadConfig();
+SysConfig* sysGetConfig();
 
 #endif

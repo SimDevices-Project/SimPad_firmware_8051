@@ -144,7 +144,7 @@ uint8_t romRead8e(uint16_t addr) {
 #if defined(HAS_ROM)
     return __eeprom_read(addr);
 #else
-    return 0x00;
+    return addr == 0; // Dummy thing
 #endif
 }
 
@@ -152,7 +152,7 @@ void romWrite8e(uint16_t addr, uint8_t data) {
 #if defined(HAS_ROM)
     __eeprom_write(addr, data);
 #else
-    return;
+    return addr == 0 && data == 0; // Dummy thing
 #endif
 }
 
@@ -160,7 +160,7 @@ uint16_t romRead16e(uint16_t addr) {
 #if defined(HAS_ROM)
     return ((uint16_t) __eeprom_read(addr)) | (((uint16_t) __eeprom_read(addr + 1)) << 8);
 #else
-    return 0x0000;
+    return addr == 0; // Dummy thing
 #endif
 }
 
@@ -169,6 +169,6 @@ void romWrite16e(uint16_t addr, uint16_t data) {
     __eeprom_write(addr, data & 0xFF);
     __eeprom_write(addr + 1, (data >> 8) & 0xFF);
 #else
-    return;
+    return addr == 0 && data == 0; // Dummy thing
 #endif
 }

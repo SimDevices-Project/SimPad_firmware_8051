@@ -6,8 +6,8 @@
 
 #include <string.h>
 
-volatile uint32_t sysTickCount = 0;
-volatile __xdata SysConfig __at (SYS_CFG_A) sysConfig;  // 0x03E7为下一个起始地址
+volatile uint32_i sysTickCount = 0;
+static __xdata SysConfig sysConfig;
 
 void sysClockConfig() {
     SAFE_MOD = 0x55;
@@ -171,4 +171,8 @@ void sysLoadConfig() {
             LED_CFG(i).length = tmp;
         }
     }
+}
+
+SysConfig* sysGetConfig() {
+    return &sysConfig;
 }

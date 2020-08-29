@@ -30,9 +30,11 @@ const uint8_c usbDevDesc[] = {
 #if defined(SIMPAD_V2_AE)
     0x06, 0x00,         // 产品ID
 #elif defined(SIMPAD_NANO_AE)
-    0x04, 0x00,         // 产品ID
+    0x07, 0x00,         // 产品ID
 #elif defined(SIMPAD_V2)
     0x01, 0x00,         // 产品ID
+#elif defined(SIMPAD_NANO)
+    0x04, 0x00,         // 产品ID
 #else
     0x00, 0x00,
 #endif
@@ -213,14 +215,14 @@ const uint8_c CustomRepDesc[] = {
     0x09, 0x01,        // Usage (0x01)
     0xA1, 0x01,        // Collection (Application)
     0x85, 0xAA,        //   Report ID (170)
-    0x95, 0x20,        //   Report Count (32)
+    0x95, HID_BUF,     //   Report Count (32)
     0x75, 0x08,        //   Report Size (8)
     0x25, 0x01,        //   Logical Maximum (1)
     0x15, 0x00,        //   Logical Minimum (0)
     0x09, 0x01,        //   Usage (0x01)
     0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
     0x85, 0x55,        //   Report ID (85)
-    0x95, 0x20,        //   Report Count (32)
+    0x95, HID_BUF,     //   Report Count (32)
     0x75, 0x08,        //   Report Size (8)
     0x25, 0x01,        //   Logical Maximum (1)
     0x15, 0x00,        //   Logical Minimum (0)
@@ -234,9 +236,11 @@ const uint8_c usbManuDesc[] = { 0x0A, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0 };
 #if defined(SIMPAD_V2_AE)
     const uint8_c usbProdDesc[] = { 0x1A, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'V', 0, '2', 0, ' ', 0, 'A', 0, 'E', 0 };
 #elif defined(SIMPAD_NANO_AE)
-    const uint8_c usbProdDesc[] = { 0x1C, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'N', 0, 'a', 0, 'n', 0, 'o', 0, ' ', 0, 'A', 0, 'E', 0 };
+    const uint8_c usbProdDesc[] = { 0x1E, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'N', 0, 'a', 0, 'n', 0, 'o', 0, ' ', 0, 'A', 0, 'E', 0 };
 #elif defined(SIMPAD_V2)
     const uint8_c usbProdDesc[] = { 0x14, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'V', 0, '2', 0 };
+#elif defined(SIMPAD_NANO)
+    const uint8_c usbProdDesc[] = { 0x18, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'N', 0, 'a', 0, 'n', 0, 'o', 0 };
 #else
     const uint8_c usbProdDesc[] = { 0x18, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'N', 0, 'u', 0, 'l', 0, 'l', 0 };
 #endif
@@ -253,7 +257,7 @@ uint8_x __at (0x0008) Ep1Buffer[MAX_PACKET_SIZE];                               
 uint8_x __at (0x0048) Ep2Buffer[MAX_PACKET_SIZE];                                           //端点2 IN缓冲区,必须是偶地址
 uint8_x __at (0x0088) Ep3Buffer[2 * MAX_PACKET_SIZE];                                       //端点3 OUT&IN缓冲区,必须是偶地址
 // 自动分配地址从0x0108开始，需修改make文件
-uint8_x __at (0x0108) HIDMouse[4] = { 0 };                                                  //鼠标数据
+uint8_x HIDMouse[4] = { 0 };                                                                //鼠标数据
 /*
     byte 0: control key
         bit 0-7: lCtrl, lShift, lAlt, lGUI, rCtrl, rShift, rAlt, rGUI
@@ -261,10 +265,10 @@ uint8_x __at (0x0108) HIDMouse[4] = { 0 };                                      
         bit 0-7: play, pause, next, prev, stop, mute, vol+, vol-
     byte 2-9: standard key
 */
-uint8_x __at (0x010C) HIDKey[10] = { 0 };                                                   //键盘数据
-uint8_x __at (0x0116) HIDInput[32] = { 0 };                                                 //自定义HID接收缓冲
-uint8_x __at (0x0136) HIDOutput[32] = { 0 };                                                //自定义HID发送缓冲
-uint8_t             SetupReqCode, SetupLen, Count, FLAG, UsbConfig;
+uint8_x HIDKey[10] = { 0 };                                                                 //键盘数据
+uint8_x HIDInput[HID_BUF] = { 0 };                                                          //自定义HID接收缓冲
+uint8_x HIDOutput[HID_BUF] = { 0 };                                                         //自定义HID发送缓冲
+uint8_i             SetupReqCode, SetupLen, Count, FLAG, UsbConfig;
 uint8_t*            pDescr;                                                                 //USB配置标志
 volatile __bit      HIDIN = 0;
 #define UsbSetupBuf ((PUSB_SETUP_REQ)Ep0Buffer)

@@ -3,8 +3,7 @@
 
 #include "ch552.h"
 
-#define LED_FADE_ADDR   0x0156  // LED渐变列表存储起始地址（xRAM），需确认USB占用后的结束地址
-#define LED_FADE_LEN    8       // LED渐变列表最大长度
+#define LED_FADE_LEN    4       // LED渐变列表最大长度
 
 typedef enum { LEDNone = 0, LEDRGB = 1, LEDBGR = 2, LEDTRI = 3 } LEDMode;
 
@@ -21,6 +20,7 @@ typedef struct {
     uint8_t step;
     uint8_t count;
     uint32_t time;
+    uint8_t r, g, b;
 } RGBConfig;
 
 void rgbInit();

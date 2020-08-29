@@ -7,11 +7,37 @@
 
 #include <string.h>
 
-static __code CVM_FUNC cvmFuncList[CVM_FUNC_MAX];
-static __idata uint32_t cvmProgCnt = 0;
+#include "instr.h"
 
-#define CVM_JMP_DUMMY  0xFFFFFFFF
-static __idata uint32_t cvmJmpAddr = CVM_JMP_DUMMY;
+static __code CVM_FUNC cvmFuncList[] = {
+    { &__instr_nop,     CVM_OP_NARG },
+    { &__instr_jmp,     CVM_OP_DST8 },
+    { &__instr_clr,     CVM_OP_NARG },
+    { &__instr_prt,     CVM_OP_DST8 },
+    { &__instr_hidp,    CVM_OP_NARG },
+    { &__instr_strp,    CVM_OP_DST8 },
+    { &__instr_out,     CVM_OP_DST },
+    { &__instr_keyp,    CVM_OP_NARG },
+    { &__instr_ldi,     CVM_OP_DST },
+    { &__instr_lde,     CVM_OP_DST },
+    { &__instr_wri,     CVM_OP_DST },
+    { &__instr_wre,     CVM_OP_DST },
+    { &__instr_sleep,   CVM_OP_DST },
+    { &__instr_led,     CVM_OP_DST_SRC },
+    { &__instr_time,    CVM_OP_DST },
+    { &__instr_fade,    CVM_OP_DST_SRC },
+    { &__instr_trig,    CVM_OP_DST },
+    { &__instr_rgb,     CVM_OP_DST },
+    { &__instr_sysrst,  CVM_OP_DST },
+    { &__instr_reload,  CVM_OP_DST },
+    { &__instr_iap,     CVM_OP_DST }
+};
+
+static __idata bool cvmEndFlag = false;
+static __idata cvm_ret (*cvmWDTCallback)() = NULL;
+static __idata cvm_addr cvmProgCnt = 0;
+#define CVM_JMP_DUMMY  0xFFFF
+static __idata cvm_addr cvmJmpAddr = CVM_JMP_DUMMY;
 
 static __idata CVM_ERR_INFO cvmErrInfo;
 
@@ -19,8 +45,16 @@ CVM_ERR_INFO* cvm_err_info() {
     return &cvmErrInfo;
 }
 
+void cvm_end() {
+    cvmEndFlag = true;
+}
+
 void cvm_jmp(cvm_addr addr) {
     cvmJmpAddr = addr;
+}
+
+void cvm_wdt(cvm_ret (*callback)()) {
+    cvmWDTCallback = callback;
 }
 
 cvm_ret cvm_exe(CVM_OP* op) {
@@ -117,15 +151,27 @@ cvm_ret cvm_run(uint8_t* code, cvm_addr length) {
     uint8_t op_length = 0; uint8_t* offset = code;
     CVM_OP op_body;
     cvm_ret result = CVM_RET_OK;
+    cvmEndFlag = false;
 
     memset(&cvmErrInfo, 0, sizeof(CVM_ERR_INFO));
 
     while (cvmProgCnt < length) {
+        if (cvmWDTCallback != NULL) {
+            result = cvmWDTCallback();
+            if (result != CVM_RET_OK)
+                return CVM_RET_ERR;
+        }
+
+        if (cvmEndFlag == true) {
+            cvmEndFlag = false;
+            break;
+        }
+
         offset = code + cvmProgCnt;
 
         op_length = __cvm_get_op_len(offset);
         if (cvmProgCnt + op_length > length) {
-            strcpy(cvmErrInfo.msg, "Invaild Len");
+            cvmErrInfo.msg = 'L';
             cvmErrInfo.addr = cvmProgCnt;
             return CVM_RET_ERR;
         }
@@ -135,21 +181,21 @@ cvm_ret cvm_run(uint8_t* code, cvm_addr length) {
         result = cvm_exe(&op_body);
 
         if (result == CVM_RET_ERR) {
-            strcpy(cvmErrInfo.msg, "Std Error");
+            cvmErrInfo.msg = 'E';
             cvmErrInfo.addr = cvmProgCnt;
             memcpy(&(cvmErrInfo.op), &op_body, sizeof(CVM_OP));
             return CVM_RET_ERR;
         }
 
         if (cvmProgCnt >= length) {
-            strcpy(cvmErrInfo.msg, "Invaild Addr");
+            cvmErrInfo.msg = 'A';
             cvmErrInfo.addr = cvmProgCnt;
             return CVM_RET_ERR;
         }
 
         if (cvmJmpAddr != CVM_JMP_DUMMY) {
             if (cvmJmpAddr >= length) {
-                strcpy(cvmErrInfo.msg, "Invaild Jump");
+                cvmErrInfo.msg = 'J';
                 cvmErrInfo.addr = cvmProgCnt;
                 memcpy(&(cvmErrInfo.op), &op_body, sizeof(CVM_OP));
                 return CVM_RET_ERR;
