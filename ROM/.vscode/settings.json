@@ -1,3 +1,9 @@
 {
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "iosfwd": "c",
+        "xlocale": "c",
+        "xstring": "c",
+        "stack": "c"
+    }
 }

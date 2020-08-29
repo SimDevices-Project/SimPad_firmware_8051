@@ -30,7 +30,7 @@
 #define CVM_RET_OK     0x00
 #define CVM_RET_ERR    0x01
 
-#define cvm_addr       uint32_t
+#define cvm_addr       uint16_t
 
 /* ---------------- 配置区域结束 ---------------- */
 
@@ -112,16 +112,19 @@ typedef uint16_t cvm_opi;
 #endif
 
 typedef struct {
-    char msg[16];
+    char msg;
     cvm_addr addr;
     CVM_OP op;
 } CVM_ERR_INFO;
 
 CVM_ERR_INFO* cvm_err_info();
 
+void cvm_end();
 void cvm_jmp(cvm_addr addr);
 cvm_ret cvm_exe(CVM_OP* op);
 cvm_ret cvm_run(uint8_t* code, cvm_addr length);
+
+void cvm_wdt(cvm_ret (*callback)());
 
 
 #endif
