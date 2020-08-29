@@ -91,6 +91,8 @@ uint8_t __eeprom_read(uint16_t addr) {
     __eeprom_stop();
     return data;
 }
+#else
+volatile __bit __rom_dummy;
 #endif
 
 void __flash_write(uint8_t addr, uint8_t data) {
@@ -152,7 +154,7 @@ void romWrite8e(uint16_t addr, uint8_t data) {
 #if defined(HAS_ROM)
     __eeprom_write(addr, data);
 #else
-    return addr == 0 && data == 0; // Dummy thing
+     __rom_dummy = addr == 0 && data == 0; // Dummy thing
 #endif
 }
 
@@ -169,6 +171,6 @@ void romWrite16e(uint16_t addr, uint16_t data) {
     __eeprom_write(addr, data & 0xFF);
     __eeprom_write(addr + 1, (data >> 8) & 0xFF);
 #else
-    return addr == 0 && data == 0; // Dummy thing
+    __rom_dummy = addr == 0 && data == 0; // Dummy thing
 #endif
 }

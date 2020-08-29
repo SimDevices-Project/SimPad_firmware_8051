@@ -1,8 +1,8 @@
 #ifndef __BSP_H
 #define __BSP_H
 
-//#define SIMPAD_V2_AE
-#define SIMPAD_NANO_AE
+#define SIMPAD_V2_AE
+//#define SIMPAD_NANO_AE
 //#define SIMPAD_V2
 //#define SIMPAD_NANO
 
