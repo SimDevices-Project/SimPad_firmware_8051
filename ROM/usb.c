@@ -247,13 +247,13 @@ const uint8_c usbKeyStrDesc[] = { 0x18, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' 
 const uint8_c usbMseStrDesc[] = { 0x16, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' ', 0, 'M', 0, 'o', 0, 'u', 0, 's', 0, 'e', 0 };
 const uint8_c usbCusStrDesc[] = { 0x18, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' ', 0, 'C', 0, 'u', 0, 's', 0, 't', 0, 'o', 0, 'm', 0 };
 
-#define OFFSET (0x0000)
-//#define OFFSET (0x400 - 0x156)
-uint8_x __at (OFFSET + 0x0000) Ep0Buffer[THIS_ENDP0_SIZE];                                  //端点0 OUT&IN缓冲区，必须是偶地址
-uint8_x __at (OFFSET + 0x0008) Ep1Buffer[MAX_PACKET_SIZE];                                  //端点1 IN缓冲区,必须是偶地址
-uint8_x __at (OFFSET + 0x0048) Ep2Buffer[MAX_PACKET_SIZE];                                  //端点2 IN缓冲区,必须是偶地址
-uint8_x __at (OFFSET + 0x0088) Ep3Buffer[2 * MAX_PACKET_SIZE];                              //端点3 OUT&IN缓冲区,必须是偶地址
-uint8_x __at (OFFSET + 0x0108) HIDMouse[4] = { 0 };                                         //鼠标数据
+// DMA缓冲区必须对齐到偶地址，xRAM自动分配地址往后移动
+uint8_x __at (0x0000) Ep0Buffer[THIS_ENDP0_SIZE];                                           //端点0 OUT&IN缓冲区，必须是偶地址
+uint8_x __at (0x0008) Ep1Buffer[MAX_PACKET_SIZE];                                           //端点1 IN缓冲区,必须是偶地址
+uint8_x __at (0x0048) Ep2Buffer[MAX_PACKET_SIZE];                                           //端点2 IN缓冲区,必须是偶地址
+uint8_x __at (0x0088) Ep3Buffer[2 * MAX_PACKET_SIZE];                                       //端点3 OUT&IN缓冲区,必须是偶地址
+// 自动分配地址从0x0108开始，需修改make文件
+uint8_x __at (0x0108) HIDMouse[4] = { 0 };                                                  //鼠标数据
 /*
     byte 0: control key
         bit 0-7: lCtrl, lShift, lAlt, lGUI, rCtrl, rShift, rAlt, rGUI
@@ -261,9 +261,9 @@ uint8_x __at (OFFSET + 0x0108) HIDMouse[4] = { 0 };                             
         bit 0-7: play, pause, next, prev, stop, mute, vol+, vol-
     byte 2-9: standard key
 */
-uint8_x __at (OFFSET + 0x010C) HIDKey[10] = { 0 };                                          //键盘数据
-uint8_x __at (OFFSET + 0x0116) HIDInput[32] = { 0 };                                        //自定义HID接收缓冲
-uint8_x __at (OFFSET + 0x0136) HIDOutput[32] = { 0 };                                       //自定义HID发送缓冲
+uint8_x __at (0x010C) HIDKey[10] = { 0 };                                                   //键盘数据
+uint8_x __at (0x0116) HIDInput[32] = { 0 };                                                 //自定义HID接收缓冲
+uint8_x __at (0x0136) HIDOutput[32] = { 0 };                                                //自定义HID发送缓冲
 uint8_t             SetupReqCode, SetupLen, Count, FLAG, UsbConfig;
 uint8_t*            pDescr;                                                                 //USB配置标志
 volatile __bit      HIDIN = 0;

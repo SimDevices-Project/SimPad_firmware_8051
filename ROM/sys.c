@@ -7,7 +7,7 @@
 #include <string.h>
 
 volatile uint32_t sysTickCount = 0;
-volatile __xdata SysConfig __at (SYS_CFG_A) sysConfig;
+volatile __xdata SysConfig __at (SYS_CFG_A) sysConfig;  // 0x03E7为下一个起始地址
 
 void sysClockConfig() {
     SAFE_MOD = 0x55;
@@ -17,8 +17,8 @@ void sysClockConfig() {
 #if OSC_EN_XT
     SAFE_MOD = 0x55;
     SAFE_MOD = 0xAA;
-    CLOCK_CFG |= bOSC_EN_XT;                            //使能外部晶振
-    CLOCK_CFG &= ~bOSC_EN_INT;                          //关闭内部晶振
+    CLOCK_CFG |= bOSC_EN_XT;                            // 使能外部晶振
+    CLOCK_CFG &= ~bOSC_EN_INT;                          // 关闭内部晶振
 #endif
 
     SAFE_MOD = 0x55;
@@ -115,6 +115,18 @@ void sysTickConfig() {
 #endif
 }
 
+uint32_t sysGetTickCount() {
+    return sysTickCount;
+}
+
+uint32_t sysGetRGB(uint16_t color, uint8_t extend) {
+    uint32_t val = 0;
+    val = ((uint32_t) ((color & 0xF800) | ((extend & 0xE0) << 3))) << 8;
+    val |= ((uint32_t) ((color & 0x07E0) | (extend & 0x18))) << 5;
+    val |= ((color & 0x001F) << 3) | (extend & 0x07);
+    return val;
+}
+
 #define KEY_CFG(i)  (sysConfig.keyConfig[i])
 #define LED_CFG(i)  (sysConfig.ledConfig[i])
 
@@ -148,9 +160,7 @@ void sysLoadConfig() {
         LED_CFG(i).marco = (addr != 0xFFFF);
         if (!LED_CFG(i).marco) {
             addr = romRead8i(0x26 + i * 1);     // LEDxEX
-            LED_CFG(i).color = ((uint32_t) ((tmp & 0xF800) | ((addr & 0xE0) << 3))) << 8;   // R
-            LED_CFG(i).color |= ((uint32_t) ((tmp & 0x07E0) | (addr & 0x18))) << 5;         // G
-            LED_CFG(i).color |= ((tmp & 0x001F) << 3) | (addr & 0x07);                      // B
+            LED_CFG(i).color = sysGetRGB(tmp, addr);
         } else {
             for (uint16_t j = 0; j < tmp; j++) {
                 if (addr + j < FLASH_SIZE)

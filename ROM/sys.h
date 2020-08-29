@@ -4,16 +4,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define	 FREQ_SYS       24000000	        //系统主频24MHz
-#define  OSC_EN_XT      0                   //外部晶振使能，默认开启内部晶振
-#define  MARCO_MAX      256                 //单个宏指令大小
-#define  SYS_CFG_A      0x0160              //系统配置存储起始地址（xRAM），需确认USB占用后的结束地址
+#include "bsp.h"
 
-void	sysClockConfig();                   //时钟选择和配置
-void	delay_us(uint16_t n);               //以uS为单位延时
-void	delay(uint16_t n);                  //以mS为单位延时
+#define	 FREQ_SYS       24000000	        // 系统主频24MHz
+#define  OSC_EN_XT      0                   // 外部晶振使能，默认开启内部晶振
+#define  MARCO_MAX      48                  // 单个宏指令大小
+#define  SYS_CFG_A      0x0202              // 系统配置存储起始地址（xRAM），需确认LED渐变列表占用后的结束地址
+
+void	sysClockConfig();                   // 时钟选择和配置
+void	delay_us(uint16_t n);               // 以uS为单位延时
+void	delay(uint16_t n);                  // 以mS为单位延时
 
 void    sysTickConfig();
+uint32_t sysGetTickCount();
 
 typedef enum { KeyNone = 0, KeyDown = 1, KeyUp = 2, KeyPress = 3 } KeyMode;
 
@@ -33,11 +36,11 @@ typedef struct {
 } LEDConfig;
 
 typedef struct {
-    KeyConfig keyCofig[KEY_COUNT];
-    LEDConfig ledCofig[LED_COUNT];
+    KeyConfig keyConfig[KEY_COUNT];
+    LEDConfig ledConfig[LED_COUNT];
 } SysConfig;
 
-extern SysConfig sysConfig;
+uint32_t sysGetRGB(uint16_t color, uint8_t extend);
 void sysLoadConfig();
 
 #endif
