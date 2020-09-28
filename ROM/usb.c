@@ -246,10 +246,12 @@ const uint8_c usbManuDesc[] = { 0x0A, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0 };
 #endif
 
 const uint8_c usbSerialDesc[] = { 0x0A, 0x03, '0', 0, '0', 0, '0', 0, '0', 0 };
-const uint8_c usbCfgStrDesc[] = { 0x12, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' ', 0, 'U', 0, 'S', 0, 'B', 0 };
-const uint8_c usbKeyStrDesc[] = { 0x18, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' ', 0, 'K', 0, 'e', 0, 'y', 0, 'p', 0, 'a', 0, 'd', 0 };
-const uint8_c usbMseStrDesc[] = { 0x16, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' ', 0, 'M', 0, 'o', 0, 'u', 0, 's', 0, 'e', 0 };
-const uint8_c usbCusStrDesc[] = { 0x18, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0, ' ', 0, 'C', 0, 'u', 0, 's', 0, 't', 0, 'o', 0, 'm', 0 };
+#ifdef USE_EXT_STR
+const uint8_c usbCfgStrDesc[] = { 0x08, 0x03, 'U', 0, 'S', 0, 'B', 0 };
+const uint8_c usbKeyStrDesc[] = { 0x08, 0x03, 'K', 0, 'e', 0, 'y', 0 };
+const uint8_c usbMseStrDesc[] = { 0x08, 0x03, 'M', 0, 's', 0, 'e', 0 };
+const uint8_c usbCusStrDesc[] = { 0x08, 0x03, 'C', 0, 'u', 0, 's', 0 };
+#endif
 
 // DMA缓冲区必须对齐到偶地址，xRAM自动分配地址往后移动
 uint8_x __at (0x0000) Ep0Buffer[THIS_ENDP0_SIZE];                                           //端点0 OUT&IN缓冲区，必须是偶地址
@@ -356,6 +358,7 @@ void __usbDeviceInterrupt() __interrupt (INT_NO_USB) __using (1) {
                                                     pDescr = (uint8_t*) (&usbSerialDesc[0]);
                                                     len = sizeof(usbSerialDesc);
                                                     break;
+                                            #ifdef USE_EXT_STR
                                                 case 4:
                                                     pDescr = (uint8_t*) (&usbCfgStrDesc[0]);
                                                     len = sizeof(usbCfgStrDesc);
@@ -372,6 +375,7 @@ void __usbDeviceInterrupt() __interrupt (INT_NO_USB) __using (1) {
                                                     pDescr = (uint8_t*) (&usbCusStrDesc[0]);
                                                     len = sizeof(usbCusStrDesc);
                                                     break;
+                                            #endif
 												default:
 													len = 0xFF;                             // 不支持的字符串描述符
 													break;
@@ -525,13 +529,6 @@ void __usbDeviceInterrupt() __interrupt (INT_NO_USB) __using (1) {
 					break;
 				case UIS_TOKEN_OUT | 0:                                                                             // endpoint 0# OUT
 					switch (SetupReqCode) {
-                        case 0x09:
-                            if (Ep0Buffer[0])  {
-                                //printf("Light on Num Lock LED!\n");
-                            } else if (Ep0Buffer[0] == 0) {
-                                //printf("Light off Num Lock LED!\n");
-                            }
-                            break;
 						default:
 							UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;                                              // 准备下一控制传输
 							break;

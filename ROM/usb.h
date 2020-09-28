@@ -10,6 +10,7 @@ void usbReleaseAll();
 void usbPushKeydata();
 
 #define HID_BUF 32
+//#define USE_EXT_STR
 
 uint8_t getHIDData(uint8_t index);
 void setHIDData(uint8_t index, uint8_t data);
