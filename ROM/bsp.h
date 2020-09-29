@@ -6,7 +6,7 @@
 //#define SIMPAD_V2
 //#define SIMPAD_NANO
 
-//#define INSTR_ENB_STRP
+#define INSTR_ENB_STRP
 
 #define RGB_USE_GRAD_LIST
 #define RGB_GRAD_LIST_LITE

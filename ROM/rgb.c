@@ -103,8 +103,11 @@ volatile uint16_i fadeLength = 0;
 
 void rgbSetLed(uint16_t index, uint16_t value) {
     uint8_t i = index & 0xFF;
+    fadeConfig[i].mode = LEDNone;
+    fadeConfig[i].step = 0;
     fadeConfig[i].length = 0;
     fadeConfig[i].nodes[0].color = sysGetRGB(value, (index >> 8) & 0xFF);
+    fadeConfig[i].nodes[0].length = 0;
     rgbSet(i, fadeConfig[i].nodes[0].color);
 }
 

@@ -45,7 +45,7 @@ void main() {
     EA = 1;
 
     for (i = 0; i < LED_COUNT; i++) {
-        if (!cfg->ledConfig[i].marco)
+        if (cfg->ledConfig[i].marco)
             cvm_run(cfg->ledConfig[i].program, cfg->ledConfig[i].length);
         else
             rgbSetLed(i, cfg->ledConfig[i].color);
@@ -122,7 +122,7 @@ void main() {
 
         if (hasHIDData()) {
             cvm_wdt(NULL);
-            for (i = 0; i < 32; i++)
+            for (i = 0; i < HID_BUF; i++)
                 hostCodeBuf[i] = getHIDData(i);
             cvm_run(hostCodeBuf, HID_BUF);
             requestHIDData();

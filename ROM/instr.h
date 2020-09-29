@@ -159,6 +159,8 @@ cvm_ret __instr_jmp(CVM_OP* op) {
 }
 
 cvm_ret __instr_clr(CVM_OP* op) {
+	for (uint8_t i = 0; i < HID_BUF; i++)
+        setHIDData(i, 0);
     out_ptr = 0;
     DUMMY_THING(op);
     return CVM_RET_OK;
@@ -172,10 +174,8 @@ cvm_ret __instr_prt(CVM_OP* op) {
 
 cvm_ret __instr_hidp(CVM_OP* op) {
     pushHIDData();
-    for (uint8_t i = 0; i < HID_BUF; i++)
-        setHIDData(i, 0);
     DUMMY_THING(op);
-    return CVM_RET_OK;
+    return __instr_clr(op);
 }
 
 cvm_ret __instr_strp(CVM_OP* op) {

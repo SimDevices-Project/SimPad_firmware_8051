@@ -152,6 +152,7 @@ cvm_ret cvm_run(uint8_t* code, cvm_addr length) {
     CVM_OP op_body;
     cvm_ret result = CVM_RET_OK;
     cvmEndFlag = false;
+    cvmProgCnt = 0;
 
     memset(&cvmErrInfo, 0, sizeof(CVM_ERR_INFO));
 
