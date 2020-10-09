@@ -1,5 +1,6 @@
 #include "ch552.h"
 #include "sys.h"
+#include "rom.h"
 #include "usb.h"
 #include "rgb.h"
 #include "fir.h"
@@ -35,6 +36,9 @@ void main() {
     uint8_t i;
     sysClockConfig();
     delay(5);
+
+    romInit();
+    delay(500);
 
     sysLoadConfig();
     SysConfig* cfg = sysGetConfig();

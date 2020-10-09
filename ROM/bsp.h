@@ -2,7 +2,7 @@
 #define __BSP_H
 
 #define SIMPAD_V2_AE
-//#define SIMPAD_NANO_AE
+#define SIMPAD_NANO_AE
 //#define SIMPAD_V2
 //#define SIMPAD_NANO
 
@@ -49,7 +49,7 @@ __sbit  __at (0xB7) P37;
     #define KEY_COUNT 3
     #define LED P14
     #define LED_COUNT 2
-    #define HAS_ROM 1
+    #define HAS_ROM
     #define ROM_SIZE 0x800
     #define ROM_SDA P11
     #define ROM_SCL P10
