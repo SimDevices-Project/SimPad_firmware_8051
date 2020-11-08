@@ -21,6 +21,7 @@ typedef struct {
     uint8_t count;
     uint32_t time;
     uint8_t r, g, b;
+    uint32_t c;
 } RGBConfig;
 
 void rgbInit();

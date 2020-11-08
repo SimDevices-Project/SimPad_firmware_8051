@@ -16,6 +16,11 @@ void firUpdate() {
         }
     }
 
+#if defined(SIM_KEY)
+    BT = 1;
+    delay_us(10);
+    firBuffer[0] <<= 1; firBuffer[0] |= !BT;
+#else
     BT1 = 1; BT2 = 1;
     delay_us(10);
     firBuffer[0] <<= 1; firBuffer[0] |= !BT1;
@@ -30,6 +35,7 @@ void firUpdate() {
     BT3 = 1;
     delay_us(10);
     firBuffer[2] <<= 1; firBuffer[2] |= !BT3;
+#endif
 #endif
 }
 

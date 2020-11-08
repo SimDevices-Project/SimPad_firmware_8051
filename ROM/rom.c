@@ -1,65 +1,80 @@
 #include "rom.h"
 
 #include "bsp.h"
+#include "sys.h"
 
 #if defined(HAS_ROM)
 void __eeprom_reset() {
+    ROM_SDA = 1; delay_us(5);
     for (uint8_t i = 0; i < 9; i++) {
-        ROM_SCL = 1;
+        ROM_SCL = 1; delay_us(5);
         if (ROM_SDA == 1) break;
-        ROM_SCL = 0;
+        ROM_SCL = 0; delay_us(5);
     }
+    ROM_SCL = 0; delay_us(5);
+    ROM_SDA = 1;
+    ROM_SCL = 1; delay_us(5);
+    ROM_SDA = 0; delay_us(5);
 }
 
 void __eeprom_start() {
-    ROM_SCL = 1;
     ROM_SDA = 1;
-    ROM_SDA = 0;
+    ROM_SCL = 1; delay_us(5);
+    ROM_SDA = 0; delay_us(5);
 }
 
 void __eeprom_stop() {
-    ROM_SCL = 1;
     ROM_SDA = 0;
-    ROM_SDA = 1;
+    ROM_SCL = 1; delay_us(5);
+    ROM_SDA = 1; delay_us(5);
 }
 
 void __eeprom_ack() {
     ROM_SCL = 0;
-    ROM_SCL = 1;
-    while (ROM_SDA == 1);
-    ROM_SCL = 0;
+    ROM_SDA = 1;
+    ROM_SCL = 1; delay_us(5);
+    for (uint8_t i = 0; i < 0xFF; i++)
+        if (ROM_SDA == 0) break;
+    ROM_SCL = 0; delay_us(5);
 }
 
 void __eeprom_nak() {
     ROM_SCL = 0;
     ROM_SDA = 1;
-    ROM_SCL = 1;
-    ROM_SCL = 0;
+    ROM_SCL = 1; delay_us(5);
+    ROM_SCL = 0; delay_us(5);
 }
 
 void __eeprom_wr(uint8_t data) {
-    ROM_SCL = 0;
     for (uint8_t i = 0; i < 8; i++) {
-        ROM_SDA = (data << i) & 0x80;
-        ROM_SCL = 1;
-        ROM_SCL = 0;
+        ROM_SCL = 0; delay_us(5);
+        ROM_SDA = (data & 0x80); delay_us(5);
+        ROM_SCL = 1; delay_us(5);
+        data <<= 1;
     }
+    ROM_SCL = 0;
+    ROM_SDA = 1;
+    delay_us(5);
 }
 
 uint8_t __eeprom_rd() {
     uint8_t data = 0;
-    ROM_SCL = 0;
+    __bit tmp;
+    ROM_SCL = 0; delay_us(5);
     for (uint8_t i = 0; i < 8; i++) {
-        ROM_SCL = 1;
-        data |= ROM_SDA << (7 - i);
-        ROM_SCL = 0;
+        ROM_SCL = 1; delay_us(5);
+        tmp = ROM_SDA;
+        data <<= 1;
+        data |= tmp;
+        delay_us(5);
+        ROM_SCL = 0; delay_us(5);
     }
     return data;
 }
 
 void __eeprom_write(uint16_t addr, uint8_t data) {
-    ROM_WP = 0;
-    addr &= ROM_SIZE;
+    ROM_WP = 0; delay_us(5);
+    addr &= (ROM_SIZE - 1);
     uint8_t devAddr = 0xA0 | (((addr >> 8) & 0x07) << 1);
     uint8_t wordAddr = addr & 0xFF;
     __eeprom_start();
@@ -70,7 +85,8 @@ void __eeprom_write(uint16_t addr, uint8_t data) {
     __eeprom_wr(data);
     __eeprom_ack();
     __eeprom_stop();
-    ROM_WP = 1;
+    delay(2);
+    ROM_WP = 1; delay_us(5);
 }
 
 uint8_t __eeprom_read(uint16_t addr) {
@@ -91,6 +107,8 @@ uint8_t __eeprom_read(uint16_t addr) {
     __eeprom_stop();
     return data;
 }
+#else
+volatile __bit __rom_dummy;
 #endif
 
 void __flash_write(uint8_t addr, uint8_t data) {
@@ -117,9 +135,11 @@ uint8_t __flash_read(uint8_t addr) {
 
 void romInit() {
 #if defined(HAS_ROM)
-    ROM_WP = 0;
+    ROM_SDA = 1;
+    ROM_SCL = 1;
+    ROM_WP = 0; delay_us(5);
     __eeprom_reset();
-    ROM_WP = 1;
+    ROM_WP = 1; delay_us(5);
 #endif
 }
 
@@ -152,7 +172,7 @@ void romWrite8e(uint16_t addr, uint8_t data) {
 #if defined(HAS_ROM)
     __eeprom_write(addr, data);
 #else
-    return addr == 0 && data == 0; // Dummy thing
+     __rom_dummy = addr == 0 && data == 0; // Dummy thing
 #endif
 }
 
@@ -169,6 +189,6 @@ void romWrite16e(uint16_t addr, uint16_t data) {
     __eeprom_write(addr, data & 0xFF);
     __eeprom_write(addr + 1, (data >> 8) & 0xFF);
 #else
-    return addr == 0 && data == 0; // Dummy thing
+    __rom_dummy = addr == 0 && data == 0; // Dummy thing
 #endif
 }

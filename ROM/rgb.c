@@ -103,8 +103,11 @@ volatile uint16_i fadeLength = 0;
 
 void rgbSetLed(uint16_t index, uint16_t value) {
     uint8_t i = index & 0xFF;
+    fadeConfig[i].mode = LEDNone;
+    fadeConfig[i].step = 0;
     fadeConfig[i].length = 0;
     fadeConfig[i].nodes[0].color = sysGetRGB(value, (index >> 8) & 0xFF);
+    fadeConfig[i].nodes[0].length = 0;
     rgbSet(i, fadeConfig[i].nodes[0].color);
 }
 
@@ -187,18 +190,19 @@ __bit __rgb__trig(uint8_t index) {
 volatile uint8_i trigCtl = 0, trigSte = 0;
 volatile uint32_i prevTickCount = 0;
 
-#define NODE(i) (CFG(i).nodes[CFG(i).step])
+#define NODE(i, j) (CFG(i).nodes[CFG(i).step + (j)])
 
-#ifdef RGB_USE_GRAD_LIST
+#if defined(RGB_USE_GRAD_LIST) && !defined(RGB_GRAD_LIST_LITE)
 uint8_t __rgb__inter(uint8_t index, uint8_t input, int16_t total, uint16_t time) {
     int8_t sign = total > 0 ? 1 : -1;
     uint8_t d = (uint16_t) (sign * total) / time;
+    uint32_t now = sysGetTickCount();
     if (d == 0) {
         d = time / (uint16_t) (sign * total);
-        if ((sysGetTickCount() - CFG(index).time) % d == 0)
+        if ((now - CFG(index).time) % d == 0)
             input += sign * 1;
-    } else if (prevTickCount != sysGetTickCount()) {
-        prevTickCount = sysGetTickCount();
+    } else if (prevTickCount != now) {
+        prevTickCount = now;
         input += sign * d;
     }
     return input;
@@ -221,22 +225,32 @@ void __rgb__perform_bgr(uint8_t i) {
     CFG(i).count -= 1;
 }
 
+void __rgb__perform_trig(uint8_t trig, uint8_t pos, uint8_t v) {
+    if (trig && (trigSte & pos) == 0) {
+        trigSte |= pos;
+        if ((trigCtl & pos) == 0 || (v != 0))
+            trigCtl |= pos;
+        else
+            trigCtl &= ~pos;
+    } else if (!trig && (trigSte & pos) == 1) {
+        trigSte &= ~pos;
+    }
+}
+
 void rgbUpdate() {
-    uint32_t c = 0;
+    uint32_t c = 0, cn = 0;
     uint8_t tmp, trig;
     for (uint8_t i = 0; i < LED_COUNT; i++) {
+        trig = __rgb__trig(i);
         switch (CFG(i).mode) {
         case LEDNone:
         #ifdef RGB_USE_GRAD_LIST
-            if (__rgb__trig(i) && (trigSte & (0x01 << i)) == 0) {
-                trigSte |= (0x01 << i);
-                trigCtl |= (0x01 << i);
-            } else if (!__rgb__trig(i) && (trigSte & (0x01 << i)) == 1) {
-                trigSte &= ~(0x01 << i);
-            }
+            tmp = (0x01 << i);
+            __rgb__perform_trig(trig, tmp, 1);
 
-            if ((trigCtl & (0x01 << i)) != 0) {
-                trigCtl &= ~(0x01 << i);
+        #ifndef RGB_GRAD_LIST_LITE
+            if ((trigCtl & tmp) != 0) {
+                trigCtl &= ~tmp;
                 CFG(i).step = 0;
                 CFG(i).time = 0;
                 CFG(i).r = CFG(i).g = CFG(i).b = 0;
@@ -244,25 +258,27 @@ void rgbUpdate() {
 
             if (CFG(i).time == 0) {
                 CFG(i).time = sysGetTickCount();
-                CFG(i).r = (NODE(i).color >> 16) & 0xFF;
-                CFG(i).g = (NODE(i).color >> 8 ) & 0xFF;
-                CFG(i).b = (NODE(i).color >> 0 ) & 0xFF;
+                c = NODE(i, 0).color;
+                CFG(i).r = (c >> 16) & 0xFF;
+                CFG(i).g = (c >> 8 ) & 0xFF;
+                CFG(i).b = (c >> 0 ) & 0xFF;
             }
 
-            if (NODE(i).length != 0) {
+            if (NODE(i, 0).length != 0) {
                 uint8_x rt = 0, gt = 0, bt = 0;
-                rt = (NODE(i + 1).color >> 16) & 0xFF - (NODE(i).color >> 16) & 0xFF;
-                gt = (NODE(i + 1).color >> 8 ) & 0xFF - (NODE(i).color >> 8 ) & 0xFF;
-                bt = (NODE(i + 1).color >> 0 ) & 0xFF - (NODE(i).color >> 0 ) & 0xFF;
+                cn = NODE(i, 1).color;
+                rt = (cn >> 16) & 0xFF - (c >> 16) & 0xFF;
+                gt = (cn >> 8 ) & 0xFF - (c >> 8 ) & 0xFF;
+                bt = (cn      ) & 0xFF - (c      ) & 0xFF;
                 CFG(i).r = __rgb__inter(i, CFG(i).r, rt, NODE(i).length);
                 CFG(i).g = __rgb__inter(i, CFG(i).g, gt, NODE(i).length);
                 CFG(i).b = __rgb__inter(i, CFG(i).b, bt, NODE(i).length);
-                c |= ((uint32_t) CFG(i).r) << 16;
+                c =  ((uint32_t) CFG(i).r) << 16;
                 c |= ((uint32_t) CFG(i).g) << 8;
                 c |= CFG(i).b;
                 rgbSet(i, c);
 
-                if (sysGetTickCount() - CFG(i).time > NODE(i).length) {
+                if (sysGetTickCount() - CFG(i).time > NODE(i, 0).length) {
                     CFG(i).step += 1;
                     CFG(i).time = 0;
                     CFG(i).r = CFG(i).g = CFG(i).b = 0;
@@ -270,9 +286,34 @@ void rgbUpdate() {
                         CFG(i).step = 0;
                 }
             } else
-                rgbSet(i, NODE(i).color);
+                rgbSet(i, NODE(i, 0).color);
         #else
-            rgbSet(i, NODE(i).color);
+            CFG(i).step = 0;
+            if ((trigCtl & tmp) != 0) {
+                trigCtl &= ~tmp;
+                CFG(i).b = 0;
+                CFG(i).time = 0;
+                CFG(i).c = NODE(i, 0).color;
+            }
+
+            cn = NODE(i, 0).length;
+            if (cn != 0) {
+                if (CFG(i).b == 0) {
+                    CFG(i).c -= 0x010101;
+                    CFG(i).time += 1;
+                } else
+                    CFG(i).c = 0;
+                rgbSet(i, CFG(i).c);
+
+                if ((CFG(i).time >> (cn & 0x7)) > (cn & 0xFFF8))
+                    CFG(i).b = 1;
+            } else {
+                rgbSet(i, NODE(i, 0).color);
+            }
+        #endif
+
+        #else
+            rgbSet(i, NODE(i, 0).color);
         #endif
             break;
         case LEDRGB:
@@ -283,16 +324,7 @@ void rgbUpdate() {
             break;
         case LEDTRI:
             tmp = (0x01 << i);
-            trig = __rgb__trig(i);
-            if (trig && (trigSte & tmp) == 0) {
-                trigSte |= tmp;
-                if ((trigCtl & tmp) == 0)
-                    trigCtl |= tmp;
-                else
-                    trigCtl &= ~tmp;
-            } else if (!trig && (trigSte & tmp) == 1) {
-                trigSte &= ~tmp;
-            }
+            __rgb__perform_trig(trig, tmp, 0);
 
             if ((trigCtl & tmp) != 0)
                 __rgb__perform_rgb(i);

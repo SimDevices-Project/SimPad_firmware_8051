@@ -133,10 +133,10 @@ uint32_t sysGetRGB(uint16_t color, uint8_t extend) {
 void sysLoadConfig() {
     memset(&sysConfig, 0x00, sizeof(SysConfig));
 
-    uint16_t tmp = 0, addr = 0;
-    tmp = romRead16i(0x00);                     // BTC
+    uint16_t btc = 0, tmp = 0, addr = 0;
+    btc = romRead16i(0x00);                     // BTC
     for (uint8_t i = 0; i < KEY_COUNT; i++) {
-        KEY_CFG(i).mode = (KeyMode) ((tmp >> (2 * i)) & 0x3);
+        KEY_CFG(i).mode = (KeyMode) ((btc >> (2 * i)) & 0x3);
         tmp = romRead16i(0x02 + i * 4);         // BTx
         KEY_CFG(i).marco = (tmp & 0x8000) != 0;
         if (!KEY_CFG(i).marco) {

@@ -3,10 +3,14 @@
 
 //#define SIMPAD_V2_AE
 #define SIMPAD_NANO_AE
+//#define SIM_KEY
 //#define SIMPAD_V2
 //#define SIMPAD_NANO
 
-//#define RGB_USE_GRAD_LIST
+//#define INSTR_ENB_STRP
+
+#define RGB_USE_GRAD_LIST
+#define RGB_GRAD_LIST_LITE
 
 __sfr   __at (0x90) P1;
 __sbit  __at (0x90) P10;
@@ -46,7 +50,17 @@ __sbit  __at (0xB7) P37;
     #define KEY_COUNT 3
     #define LED P14
     #define LED_COUNT 2
-    #define HAS_ROM 1
+    #define HAS_ROM
+    #define ROM_SIZE 0x800
+    #define ROM_SDA P11
+    #define ROM_SCL P10
+    #define ROM_WP P33
+#elif defined(SIM_KEY)
+    #define BT P17
+    #define KEY_COUNT 1
+    #define LED P14
+    #define LED_COUNT 1
+    #define HAS_ROM
     #define ROM_SIZE 0x800
     #define ROM_SDA P11
     #define ROM_SCL P10

@@ -8,6 +8,7 @@
 #include "usb.h"
 #include "rgb.h"
 
+#ifdef INSTR_ENB_STRP
 #define SHIFT 0x80
 static uint8_c _asciimap[128] = {
 	0x00,             // NUL
@@ -140,6 +141,7 @@ static uint8_c _asciimap[128] = {
 	0x35|SHIFT,    // ~
 	0			   // DEL
 };
+#endif
 
 volatile uint8_t out_ptr = 0;
 volatile __bit dummy;
@@ -157,6 +159,8 @@ cvm_ret __instr_jmp(CVM_OP* op) {
 }
 
 cvm_ret __instr_clr(CVM_OP* op) {
+	for (uint8_t i = 0; i < HID_BUF; i++)
+        setHIDData(i, 0);
     out_ptr = 0;
     DUMMY_THING(op);
     return CVM_RET_OK;
@@ -170,14 +174,13 @@ cvm_ret __instr_prt(CVM_OP* op) {
 
 cvm_ret __instr_hidp(CVM_OP* op) {
     pushHIDData();
-    for (uint8_t i = 0; i < HID_BUF; i++)
-        setHIDData(i, 0);
     DUMMY_THING(op);
-    return CVM_RET_OK;
+    return __instr_clr(op);
 }
 
 cvm_ret __instr_strp(CVM_OP* op) {
     uint8_t t = op->type_dst_expr;
+#ifdef INSTR_ENB_STRP
     uint8_t c = 0;
     for (uint8_t i = 0; i < out_ptr; i++) {
         c = getHIDData(i);
@@ -192,6 +195,9 @@ cvm_ret __instr_strp(CVM_OP* op) {
         usbPushKeydata();
         delay(t);
     }
+#else
+	delay(t);
+#endif
     out_ptr = 0;
     return CVM_RET_OK;
 }
