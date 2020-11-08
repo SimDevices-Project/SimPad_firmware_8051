@@ -2,7 +2,7 @@
 
 ![License AGPL-3.0](https://img.shields.io/github/license/iamapig120/SimPad_firmware_8051.svg)
 
-[English](#)
+[English](README.en.md)
 
 SimPad 系列设备其中使用 8051 架构设计的产品固件仓库。
 
