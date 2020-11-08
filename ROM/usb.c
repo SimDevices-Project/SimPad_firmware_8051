@@ -25,12 +25,15 @@ const uint8_c usbDevDesc[] = {
     * 00 05 SimPad 3
     * 00 06 SimPad v2 - Year Edition
     * 00 07 SimPad Nano - Year Edition
+    * 00 08 SinKey
     * 00 FF SimPad Boot
     */
 #if defined(SIMPAD_V2_AE)
     0x06, 0x00,         // 产品ID
 #elif defined(SIMPAD_NANO_AE)
     0x07, 0x00,         // 产品ID
+#elif defined(SIM_KEY)
+    0x08, 0x00,         // 产品ID
 #elif defined(SIMPAD_V2)
     0x01, 0x00,         // 产品ID
 #elif defined(SIMPAD_NANO)
@@ -237,6 +240,8 @@ const uint8_c usbManuDesc[] = { 0x0A, 0x03, 'N', 0, 'S', 0, 'D', 0, 'N', 0 };
     const uint8_c usbProdDesc[] = { 0x1A, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'V', 0, '2', 0, ' ', 0, 'A', 0, 'E', 0 };
 #elif defined(SIMPAD_NANO_AE)
     const uint8_c usbProdDesc[] = { 0x1E, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'N', 0, 'a', 0, 'n', 0, 'o', 0, ' ', 0, 'A', 0, 'E', 0 };
+#elif defined(SIM_KEY)
+    const uint8_c usbProdDesc[] = { 0x0E, 0x03, 'S', 0, 'i', 0, 'm', 0, 'K', 0, 'e', 0, 'y', 0 };
 #elif defined(SIMPAD_V2)
     const uint8_c usbProdDesc[] = { 0x14, 0x03, 'S', 0, 'i', 0, 'm', 0, 'P', 0, 'a', 0, 'd', 0, ' ', 0, 'V', 0, '2', 0 };
 #elif defined(SIMPAD_NANO)

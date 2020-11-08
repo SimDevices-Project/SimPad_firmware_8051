@@ -47,10 +47,10 @@ void __eeprom_nak() {
 
 void __eeprom_wr(uint8_t data) {
     for (uint8_t i = 0; i < 8; i++) {
-        data <<= 1;
         ROM_SCL = 0; delay_us(5);
-        ROM_SDA = CY; delay_us(5);
+        ROM_SDA = (data & 0x80); delay_us(5);
         ROM_SCL = 1; delay_us(5);
+        data <<= 1;
     }
     ROM_SCL = 0;
     ROM_SDA = 1;
@@ -73,7 +73,7 @@ uint8_t __eeprom_rd() {
 }
 
 void __eeprom_write(uint16_t addr, uint8_t data) {
-    ROM_WP = 1; delay_us(5);
+    ROM_WP = 0; delay_us(5);
     addr &= (ROM_SIZE - 1);
     uint8_t devAddr = 0xA0 | (((addr >> 8) & 0x07) << 1);
     uint8_t wordAddr = addr & 0xFF;
@@ -86,7 +86,7 @@ void __eeprom_write(uint16_t addr, uint8_t data) {
     __eeprom_ack();
     __eeprom_stop();
     delay(2);
-    ROM_WP = 0; delay_us(5);
+    ROM_WP = 1; delay_us(5);
 }
 
 uint8_t __eeprom_read(uint16_t addr) {
@@ -137,9 +137,9 @@ void romInit() {
 #if defined(HAS_ROM)
     ROM_SDA = 1;
     ROM_SCL = 1;
-    ROM_WP = 1; delay_us(5);
-    __eeprom_reset();
     ROM_WP = 0; delay_us(5);
+    __eeprom_reset();
+    ROM_WP = 1; delay_us(5);
 #endif
 }
 
