@@ -20,7 +20,7 @@ You could refer to the following table to find what you're looking for.
 |-|-|
 |ROM|Firmware source code|
 |Schematic Design|Product PCB schematics|
-|Schematic Design|PCB source files|
+|Board Documentation|PCB source files|
 
 ## Editing
 

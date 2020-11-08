@@ -20,7 +20,7 @@ SimPad 系列设备其中使用 8051 架构设计的产品固件仓库。
 |-|-|
 |ROM|固件源代码|
 |Schematic Design|产品PCB原理图|
-|Schematic Design|PCB源文件|
+|Board Documentation|PCB源文件|
 
 ## 参与编辑
 
