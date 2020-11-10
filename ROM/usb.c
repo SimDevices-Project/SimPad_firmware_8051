@@ -25,7 +25,7 @@ const uint8_c usbDevDesc[] = {
     * 00 05 SimPad 3
     * 00 06 SimPad v2 - Year Edition
     * 00 07 SimPad Nano - Year Edition
-    * 00 08 SinKey
+    * 00 08 SimKey
     * 00 FF SimPad Boot
     */
 #if defined(SIMPAD_V2_AE)

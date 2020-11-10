@@ -154,7 +154,7 @@ cvm_ret __instr_nop(CVM_OP* op) {
 }
 
 cvm_ret __instr_jmp(CVM_OP* op) {
-    cvm_jmp(op->type_dst_expr);
+    cvm_jmp(op->dst);
     return CVM_RET_OK;
 }
 
