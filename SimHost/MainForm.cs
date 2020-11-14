@@ -78,14 +78,32 @@ namespace SimHost
                 {
                     if (src != null) return Result.ERR;
                     if (dst == null) return Result.ERR;
-                    if (dst.type != RegType.CHAR && dst.type != RegType.INT)
+                    if (dst.type != RegType.CHAR && dst.type != RegType.INT && dst.type != RegType.STR)
                         return Result.ERR;
 
-                    byte i = (byte)(((int)dst.data) & 0xFF);
-                    byteCode.Add(new byte[] {
-                        0x03,
-                        i
-                    });
+                    if (dst.type == RegType.STR)
+                    {
+                        string str = (string)dst.data;
+                        for (int i = 0; i < str.Length; i++)
+                        {
+                            byteCode.Add(new byte[] {
+                                0x03,
+                                (byte)str[i]
+                            });
+                        }
+                    }
+                    else
+                    {
+                        byte i;
+                        if (dst.type == RegType.CHAR)
+                            i = (byte)(((char)dst.data) & 0xFF);
+                        else
+                            i = (byte)(((int)dst.data) & 0xFF);
+                        byteCode.Add(new byte[] {
+                            0x03,
+                            i
+                        });
+                    }
 
                     return Result.OK;
                 });
