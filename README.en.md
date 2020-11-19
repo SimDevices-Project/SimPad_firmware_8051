@@ -28,4 +28,4 @@ You could find the schematic information from files under the directory `Schemat
 
 ## Attention
 
-You must not use any resource in this repository to create any competition, directly or indirectly, to SimDevices, including but not limited to manufacturing any product that is similar in appearance or functionality to those by SimDevices. Please be kindly advised.
+You must not use any name, including product name and trademark, that is associated to SimPad and SimDevices for promotional or other purposes. Please be kindly advised.
