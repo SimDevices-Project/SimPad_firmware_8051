@@ -135,8 +135,8 @@ namespace SimHost
 
                 funcList.Add("out", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
@@ -164,8 +164,8 @@ namespace SimHost
 
                 funcList.Add("ldi", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
@@ -183,8 +183,8 @@ namespace SimHost
 
                 funcList.Add("lde", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
@@ -202,38 +202,58 @@ namespace SimHost
 
                 funcList.Add("wri", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
-                    byte i = (byte)(((int)src.data) & 0xFF);
+                    ushort i = (ushort)(((int)src.data) & 0xFFFF);
                     ushort j = (ushort)(((int)dst.data) & 0xFFFF);
                     byteCode.Add(new byte[] {
                         0x0A,
-                        i,
+                        (byte)(i & 0x00FF),
                         (byte)(j & 0x00FF),
                         (byte)((j & 0xFF00) >> 8)
                     });
+                    if (i > 0xFF)
+                    {
+                        j += 1;
+                        byteCode.Add(new byte[] {
+                            0x0A,
+                            (byte)((i & 0xFF00) >> 8),
+                            (byte)(j & 0x00FF),
+                            (byte)((j & 0xFF00) >> 8)
+                        });
+                    }
 
                     return Result.OK;
                 });
 
                 funcList.Add("wre", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
-                    byte i = (byte)(((int)src.data) & 0xFF);
+                    ushort i = (ushort)(((int)src.data) & 0xFFFF);
                     ushort j = (ushort)(((int)dst.data) & 0xFFFF);
                     byteCode.Add(new byte[] {
                         0x0B,
-                        i,
+                        (byte)(i & 0x00FF),
                         (byte)(j & 0x00FF),
                         (byte)((j & 0xFF00) >> 8)
                     });
+                    if (i > 0xFF)
+                    {
+                        j += 1;
+                        byteCode.Add(new byte[] {
+                            0x0B,
+                            (byte)((i & 0xFF00) >> 8),
+                            (byte)(j & 0x00FF),
+                            (byte)((j & 0xFF00) >> 8)
+                        });
+                    }
 
                     return Result.OK;
                 });
@@ -257,8 +277,8 @@ namespace SimHost
 
                 funcList.Add("led", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
@@ -305,8 +325,8 @@ namespace SimHost
 
                 funcList.Add("fade", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
@@ -336,8 +356,8 @@ namespace SimHost
 
                 funcList.Add("trig", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
@@ -355,8 +375,8 @@ namespace SimHost
 
                 funcList.Add("rgb", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
@@ -374,8 +394,8 @@ namespace SimHost
 
                 funcList.Add("sysrst", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
@@ -393,8 +413,8 @@ namespace SimHost
 
                 funcList.Add("reload", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
@@ -412,8 +432,8 @@ namespace SimHost
 
                 funcList.Add("iap", (dst, src, ext) =>
                 {
-                    if (src != null) return Result.ERR;
-                    if (dst != null) return Result.ERR;
+                    if (src == null) return Result.ERR;
+                    if (dst == null) return Result.ERR;
                     if (dst.type != RegType.INT) return Result.ERR;
                     if (src.type != RegType.INT) return Result.ERR;
 
@@ -438,6 +458,8 @@ namespace SimHost
 
         Hid hid;
         IntPtr ptr;
+
+        const int BUF_SIZE = 32;
 
         public MainForm()
         {
@@ -471,29 +493,33 @@ namespace SimHost
                 {
                     outputBox.Text += "Sending ...\n";
 
-                    Report report; int index = 0;
-                    List<byte> buf = new List<byte>();
-                    while (index < bytes.Length)
+                    new Thread(new ThreadStart(() =>
                     {
-                        if (buf.Count + bytes[index].Length < 16)
+                        Report report; int index = 0;
+                        List<byte> buf = new List<byte>();
+                        while (index < bytes.Length)
                         {
-                            buf.AddRange(bytes[index]);
-                            index += 1;
-                            if (index >= bytes.Length)
+                            if (buf.Count + bytes[index].Length < BUF_SIZE)
+                            {
+                                buf.AddRange(bytes[index]);
+                                index += 1;
+                                if (index >= bytes.Length)
+                                {
+                                    report = new Report(0x55, buf.ToArray());
+                                    hid.Write(report);
+                                    buf.Clear();
+                                    break;
+                                }
+                            }
+                            else
                             {
                                 report = new Report(0x55, buf.ToArray());
                                 hid.Write(report);
+                                Thread.Sleep(500);
                                 buf.Clear();
-                                break;
                             }
                         }
-                        else
-                        {
-                            report = new Report(0x55, buf.ToArray());
-                            hid.Write(report);
-                            buf.Clear();
-                        }
-                    }
+                    })).Start();
                 }
             }
         }
