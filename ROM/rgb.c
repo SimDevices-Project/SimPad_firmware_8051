@@ -158,16 +158,23 @@ uint32_t __rgb__rainbow(uint8_t step, uint8_t count) {
 
 __bit __rgb_key(uint8_t i) {
     switch (i) {
-#if (KEY_COUNT == 3)
+#if (KEY_COUNT >= 1)
     case 1:
         return BT1;
+#endif
+#if (KEY_COUNT >= 2)
     case 2:
         return BT2;
+#endif
+#if (KEY_COUNT >= 3)
     case 3:
         return BT3;
-#elif (KEY_COUNT == 5)
+#endif
+#if (KEY_COUNT >= 4)
     case 4:
         return BT4;
+#endif
+#if (KEY_COUNT == 5)
     case 5:
         return BT5;
 #endif

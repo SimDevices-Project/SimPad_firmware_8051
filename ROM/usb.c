@@ -25,7 +25,7 @@ const uint8_c usbDevDesc[] = {
     * 00 05 SimPad 3
     * 00 06 SimPad v2 - Year Edition
     * 00 07 SimPad Nano - Year Edition
-    * 00 08 SinKey
+    * 00 08 SimKey
     * 00 FF SimPad Boot
     */
 #if defined(SIMPAD_V2_AE)
@@ -282,15 +282,15 @@ volatile __bit      HIDIN = 0;
 
 void __usbDeviceInterrupt() __interrupt (INT_NO_USB) __using (1) {
     ET2 = 0;
-    uint8_t i, len;
+    uint8_t len;
 	if (UIF_TRANSFER) {                                                                     // USB传输完成
 		switch (USB_INT_ST & (MASK_UIS_TOKEN | MASK_UIS_ENDP)) {                            // 分析操作令牌和端点号
 				case UIS_TOKEN_OUT | 3:                                                     // endpoint 3# 中断端点下传
 					if (U_TOG_OK) {                                                         // 不同步的数据包将丢弃
 						len = USB_RX_LEN;
-                        if (Ep3Buffer[0] == 0x55 && len - 1 == sizeof(HIDInput) && !HIDIN) {
-                            for (i = 1; i < len; i++)
-                                HIDInput[i - 1] = Ep3Buffer[i];
+                        if (Ep3Buffer[0] == 0x55 && (len - 1) <= sizeof(HIDInput) && !HIDIN) {
+                            memset(HIDInput, 0x00, sizeof(HIDInput));
+                            memcpy(HIDInput, Ep3Buffer + 1, len - 1);
                             HIDIN = 1;
                         }
 					}
@@ -669,4 +669,8 @@ void requestHIDData() {
 
 void pushHIDData() {
     Enp3IntIn();
+}
+
+uint8_t* fetchHIDData() {
+    return HIDInput;
 }
