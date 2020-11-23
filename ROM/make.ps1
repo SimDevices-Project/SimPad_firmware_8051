@@ -21,7 +21,7 @@ if ($sources -ne $null) {
             continue
         }
         echo "CC: $s"
-        sdcc --std-c11 -mmcs51 --opt-code-size --model-large --iram-size $iram --xram-size $xram --code-size $code --xram-loc $xram_start -c $s -o ./out/
+        sdcc --std-c11 -mmcs51 --opt-code-size --model-large --iram-size $iram --xram-size $xram --code-size $code --xram-loc $xram_start -c "$s" -o ./out/
     }
     
     $objs = ls ./out/*.rel
