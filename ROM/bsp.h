@@ -1,16 +1,23 @@
 #ifndef __BSP_H
 #define __BSP_H
 
+#ifndef __MULTI_COMPILE__
+/* 编译目标设置 开始 */
 #define SIMPAD_V2_AE
-#define SIMPAD_NANO_AE
-#define SIM_KEY
+//#define SIMPAD_NANO_AE
+//#define SIM_KEY
 //#define SIMPAD_V2
 //#define SIMPAD_NANO
+/* 编译目标设置 结束 */
+#endif
 
-#define INSTR_ENB_STRP
+/* 使能字符串输入模拟指令 */
+//#define INSTR_ENB_STRP
 
-//#define RGB_USE_GRAD_LIST
-//#define RGB_GRAD_LIST_LITE
+/* 使能灯光渐变列表 */
+#define RGB_USE_GRAD_LIST
+/* 使能简化灯光渐变列表，CH552受存储空间限制，必须打开 */
+#define RGB_GRAD_LIST_LITE
 
 __sfr   __at (0x90) P1;
 __sbit  __at (0x90) P10;
@@ -32,8 +39,10 @@ __sbit  __at (0xB5) P35;
 __sbit  __at (0xB6) P36;
 __sbit  __at (0xB7) P37;
 
+/* 芯片内部存储空间大小 */
 #define FLASH_SIZE 0x80
 
+/* 板级接口定义，需要注意的是，按键需定义为BTx */
 #if defined(SIMPAD_V2_AE)
     #define BT1 P33
     #define BT2 P32
