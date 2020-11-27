@@ -13,8 +13,6 @@ extern uint8_t FLAG;
 
 void __tim2Interrupt() __interrupt (INT_NO_TMR2) __using (2);
 
-uint8_x hostCodeBuf[HID_BUF] = { 0 };
-
 volatile __bit control = 0;
 volatile uint8_t prevKey = 0;
 
@@ -126,9 +124,7 @@ void main() {
 
         if (hasHIDData()) {
             cvm_wdt(NULL);
-            for (i = 0; i < HID_BUF; i++)
-                hostCodeBuf[i] = getHIDData(i);
-            cvm_run(hostCodeBuf, HID_BUF);
+            cvm_run(fetchHIDData(), HID_BUF);
             requestHIDData();
             cvm_wdt(&cvmWDTCallback);
         }

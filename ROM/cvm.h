@@ -73,7 +73,7 @@ typedef struct {
         #define CVM_OP_DST_SRC_EXT     16
     #else
         #define CVM_OP_DST             4
-        #define CVM_OP_DST_SRC         7
+        #define CVM_OP_DST_SRC         8
     #endif
 #endif
 
