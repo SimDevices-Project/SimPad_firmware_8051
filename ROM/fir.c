@@ -7,7 +7,6 @@ static __xdata uint8_t firResult[FIR_SIZE];
 uint8_t i = 0;
 
 #define __set_pin(k) do { BT ## k = 1; for (i = 0; i < 10; i++); } while (0)
-#define __
 #define __fifo_in(i, k) do { firBuffer[i] <<= 1; firBuffer[i] |= !BT ## k; } while (0)
 
 void firUpdate() {
