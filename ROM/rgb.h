@@ -5,13 +5,16 @@
 
 #define LED_FADE_LEN    4       // LED渐变列表最大长度
 
+//             默认模式      正向渐变     反向渐变     触发模式
 typedef enum { LEDNone = 0, LEDRGB = 1, LEDBGR = 2, LEDTRI = 3 } LEDMode;
 
+// 渐变节点结构体
 typedef struct {
     uint32_t color;
     uint16_t length;
 } FadeNode;
 
+// LED配置结构体
 typedef struct {
     uint8_t trig;
     LEDMode mode;

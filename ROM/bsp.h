@@ -11,6 +11,9 @@
 /* 编译目标设置 结束 */
 #endif
 
+/* 切换至性能模式 */
+//#define PERFORMANCE_MODE
+
 /* 使能字符串输入模拟指令 */
 //#define INSTR_ENB_STRP
 

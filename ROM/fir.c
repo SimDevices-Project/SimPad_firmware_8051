@@ -2,14 +2,16 @@
 
 #include "sys.h"
 
-static __xdata fir_type firBuffer[FIR_SIZE];
-static __xdata uint8_t firResult[FIR_SIZE];
+static __xdata fir_type firBuffer[FIR_SIZE];    // FIR滤波器缓冲
+static __xdata uint8_t firResult[FIR_SIZE];     // FIR滤波结果
 uint8_t i = 0;
 
 #define __set_pin(k) do { BT ## k = 1; for (i = 0; i < 10; i++); } while (0)
-#define __
 #define __fifo_in(i, k) do { firBuffer[i] <<= 1; firBuffer[i] |= !BT ## k; } while (0)
 
+/*
+ * FIR滤波器更新
+ */
 void firUpdate() {
     fir_type buf = 0;
     for (uint8_t i = 0; i < FIR_SIZE; i++) {
@@ -43,6 +45,9 @@ void firUpdate() {
 #endif
 }
 
+/*
+ * 获取滤波后的电平状态
+ */
 __bit fir(uint8_t i) {
     return (firResult[i] > sizeof(fir_type) * 4) &&
            (firBuffer[i] & 0x1 != 0);

@@ -9,6 +9,17 @@
 
 #include "instr.h"
 
+/* ---------------- 指令注册开始 ---------------- */
+/*
+ * 指令注册方式: { 函数指针, 指令类型 }
+ * 其中，指令类型有：
+ *      CVM_OP_NARG     无操作数，长度为1字节
+ *      CVM_OP_DST8     含一个1字节的操作数，长度为2字节
+ *      CVM_OP_DST      含一个1字节的操作数类型和一个2字节的操作数，长度为4字节
+ *      CVM_OP_DST_SRC  含有两个1字节的操作数类型和两个2字节的操作数，并附加一个保留字节，长度为8字节
+ * 
+ * 指令实现见 instr.h
+ */
 static __code CVM_FUNC cvmFuncList[] = {
     { &__instr_nop,     CVM_OP_NARG },
     { &__instr_jmp,     CVM_OP_DST8 },
@@ -32,31 +43,47 @@ static __code CVM_FUNC cvmFuncList[] = {
     { &__instr_reload,  CVM_OP_DST },
     { &__instr_iap,     CVM_OP_DST }
 };
+/* ---------------- 指令注册结束 ---------------- */
 
-static __idata bool cvmEndFlag = false;
-static __idata cvm_ret (*cvmWDTCallback)() = NULL;
-static __idata cvm_addr cvmProgCnt = 0;
+static __idata bool cvmEndFlag = false;             // 解释器结束标志
+static __idata cvm_ret (*cvmWDTCallback)() = NULL;  // 解释器看门狗回调
+static __idata cvm_addr cvmProgCnt = 0;             // 程序计数器
 #define CVM_JMP_DUMMY  0xFFFF
-static __idata cvm_addr cvmJmpAddr = CVM_JMP_DUMMY;
+static __idata cvm_addr cvmJmpAddr = CVM_JMP_DUMMY; // 跳转寄存器
 
-static __idata CVM_ERR_INFO cvmErrInfo;
+static __idata CVM_ERR_INFO cvmErrInfo;             // 错误指示器
 
+/*
+ * 获取错误指示器的指针，用于获取详细的错误信息
+ */
 CVM_ERR_INFO* cvm_err_info() {
     return &cvmErrInfo;
 }
 
+/*
+ * 终止解释器
+ */
 void cvm_end() {
     cvmEndFlag = true;
 }
 
+/*
+ * 将跳转寄存器设置为某个地址，解释器将在下个周期跳转
+ */
 void cvm_jmp(cvm_addr addr) {
     cvmJmpAddr = addr;
 }
 
+/*
+ * 设置解释器看门狗回调
+ */
 void cvm_wdt(cvm_ret (*callback)()) {
     cvmWDTCallback = callback;
 }
 
+/*
+ * 执行单条指令
+ */
 cvm_ret cvm_exe(CVM_OP* op) {
 #if CVM_FUNC_MAX <= 0xFF
     return cvmFuncList[op->op_index].func(op);
@@ -71,6 +98,9 @@ cvm_ret cvm_exe(CVM_OP* op) {
 #endif
 }
 
+/*
+ * 获取下一条指令长度
+ */
 uint8_t __cvm_get_op_len(uint8_t* code) {
 #ifdef CVM_VARLEN_OP
     #if CVM_FUNC_MAX <= 0xFF
@@ -92,6 +122,10 @@ uint8_t __cvm_get_op_len(uint8_t* code) {
 #define ___CVM_GET_U32(addr) ((uint32_t) (*(addr) | (*(addr + 1) << 8) | (*(addr + 2) << 16) | (*(addr + 3) << 24)))
 #define ___CVM_GET_U16(addr) ((uint16_t) (*(addr) | (*(addr + 1) << 8)))
 
+/*
+ * 从二进制码中获取指令结构
+ * 其中 length 通过 __cvm_get_op_len 得到，op 为输出参数
+ */
 void __cvm_parse_op(uint8_t* code, uint8_t length, CVM_OP* op) {
     memset(op, 0, sizeof(CVM_OP));
 
@@ -147,6 +181,10 @@ void __cvm_parse_op(uint8_t* code, uint8_t length, CVM_OP* op) {
     #endif
 }
 
+/*
+ * 执行二进制程序
+ * 其中 length 为二进制程序长度
+ */
 cvm_ret cvm_run(uint8_t* code, cvm_addr length) {
     uint8_t op_length = 0; uint8_t* offset = code;
     CVM_OP op_body;

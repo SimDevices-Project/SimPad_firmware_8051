@@ -3,7 +3,11 @@
 #include "bsp.h"
 #include "sys.h"
 
+/* -------- 外部存储器驱动 -------- */
 #if defined(HAS_ROM)
+/*
+ * EEPROM时序复位
+ */
 void __eeprom_reset() {
     ROM_SDA = 1; delay_us(5);
     for (uint8_t i = 0; i < 9; i++) {
@@ -17,18 +21,27 @@ void __eeprom_reset() {
     ROM_SDA = 0; delay_us(5);
 }
 
+/*
+ * 开始时序
+ */
 void __eeprom_start() {
     ROM_SDA = 1;
     ROM_SCL = 1; delay_us(5);
     ROM_SDA = 0; delay_us(5);
 }
 
+/*
+ * 停止时序
+ */
 void __eeprom_stop() {
     ROM_SDA = 0;
     ROM_SCL = 1; delay_us(5);
     ROM_SDA = 1; delay_us(5);
 }
 
+/*
+ * 应答时序
+ */
 void __eeprom_ack() {
     ROM_SCL = 0;
     ROM_SDA = 1;
@@ -38,6 +51,9 @@ void __eeprom_ack() {
     ROM_SCL = 0; delay_us(5);
 }
 
+/*
+ * 非应答时序
+ */
 void __eeprom_nak() {
     ROM_SCL = 0;
     ROM_SDA = 1;
@@ -45,6 +61,9 @@ void __eeprom_nak() {
     ROM_SCL = 0; delay_us(5);
 }
 
+/*
+ * 发送一个字节
+ */
 void __eeprom_wr(uint8_t data) {
     for (uint8_t i = 0; i < 8; i++) {
         ROM_SCL = 0; delay_us(5);
@@ -57,6 +76,9 @@ void __eeprom_wr(uint8_t data) {
     delay_us(5);
 }
 
+/*
+ * 读取一个字节
+ */
 uint8_t __eeprom_rd() {
     uint8_t data = 0;
     __bit tmp;
@@ -72,6 +94,9 @@ uint8_t __eeprom_rd() {
     return data;
 }
 
+/*
+ * 向指定地址写入一个字节
+ */
 void __eeprom_write(uint16_t addr, uint8_t data) {
     ROM_WP = 0; delay_us(5);
     addr &= (ROM_SIZE - 1);
@@ -89,6 +114,9 @@ void __eeprom_write(uint16_t addr, uint8_t data) {
     ROM_WP = 1; delay_us(5);
 }
 
+/*
+ * 读取指定地址的字节
+ */
 uint8_t __eeprom_read(uint16_t addr) {
     addr &= (ROM_SIZE - 1);
     uint8_t devAddr = 0xA0 | (((addr >> 8) & 0x07) << 1);
@@ -110,7 +138,11 @@ uint8_t __eeprom_read(uint16_t addr) {
 #else
 volatile __bit __rom_dummy;
 #endif
+/* -------- 外部存储器驱动 -------- */
 
+/*
+ * 内部存储器写入
+ */
 void __flash_write(uint8_t addr, uint8_t data) {
     addr &= (FLASH_SIZE - 1);
     uint8_t offset = addr << 1;
@@ -125,6 +157,9 @@ void __flash_write(uint8_t addr, uint8_t data) {
     GLOBAL_CFG &= ~bDATA_WE;
 }
 
+/*
+ * 内部存储器读取
+ */
 uint8_t __flash_read(uint8_t addr) {
     addr &= (FLASH_SIZE - 1);
     uint8_t offset = addr << 1;
@@ -133,6 +168,9 @@ uint8_t __flash_read(uint8_t addr) {
     return ROM_DATA_L;
 }
 
+/*
+ * ROM初始化
+ */
 void romInit() {
 #if defined(HAS_ROM)
     ROM_SDA = 1;
@@ -143,23 +181,38 @@ void romInit() {
 #endif
 }
 
+/*
+ * 从内部存储器读取一个字节
+ */
 uint8_t romRead8i(uint8_t addr) {
     return __flash_read(addr);
 }
 
+/*
+ * 向内部存储器写入一个字节
+ */
 void romWrite8i(uint8_t addr, uint8_t data) {
     __flash_write(addr, data);
 }
 
+/*
+ * 从内部存储器读取一个字
+ */
 uint16_t romRead16i(uint8_t addr) {
     return ((uint16_t) __flash_read(addr)) | (((uint16_t) __flash_read(addr + 1)) << 8);
 }
 
+/*
+ * 向内部存储器写入一个字
+ */
 void romWrite16i(uint8_t addr, uint16_t data) {
     __flash_write(addr, data & 0xFF);
     __flash_write(addr + 1, (data >> 8) & 0xFF);
 }
 
+/*
+ * 从外部存储器读取一个字节
+ */
 uint8_t romRead8e(uint16_t addr) {
 #if defined(HAS_ROM)
     return __eeprom_read(addr);
@@ -168,6 +221,9 @@ uint8_t romRead8e(uint16_t addr) {
 #endif
 }
 
+/*
+ * 向外部存储器写入一个字节
+ */
 void romWrite8e(uint16_t addr, uint8_t data) {
 #if defined(HAS_ROM)
     __eeprom_write(addr, data);
@@ -176,6 +232,9 @@ void romWrite8e(uint16_t addr, uint8_t data) {
 #endif
 }
 
+/*
+ * 从外部存储器读取一个字
+ */
 uint16_t romRead16e(uint16_t addr) {
 #if defined(HAS_ROM)
     return ((uint16_t) __eeprom_read(addr)) | (((uint16_t) __eeprom_read(addr + 1)) << 8);
@@ -184,6 +243,9 @@ uint16_t romRead16e(uint16_t addr) {
 #endif
 }
 
+/*
+ * 向外部存储器写入一个字
+ */
 void romWrite16e(uint16_t addr, uint16_t data) {
 #if defined(HAS_ROM)
     __eeprom_write(addr, data & 0xFF);

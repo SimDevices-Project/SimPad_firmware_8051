@@ -3,13 +3,16 @@
 #include "bsp.h"
 #include "sys.h"
 
+/* -------- LED数据 -------- */
 #if defined(SIMPAD_V2)
 // [index][count: 0, control: 1][red: 0, green: 1, blue: 2]
 static uint8_i RGBS[2][2][3];
 #else
 static uint32_i rgbGRBData[LED_COUNT];
 #endif
+/* -------- LED数据 -------- */
 
+/* -------- 非总线式LED驱动 -------- */
 #if defined(SIMPAD_V2)
 extern volatile uint32_t sysTickCount;
 volatile uint8_t __tick_cnt = 0;
@@ -34,7 +37,11 @@ void __tim2Interrupt() __interrupt (INT_NO_TMR2) __using (2) {
     }
 }
 #endif
+/* -------- 非总线式LED驱动 -------- */
 
+/*
+ * LED初始化
+ */
 void rgbInit() {
 #if defined(SIMPAD_V2)
     T2MOD |= (bTMR_CLK | bT2_CLK);
@@ -47,6 +54,9 @@ void rgbInit() {
 #endif
 }
 
+/*
+ * 设置LED颜色
+ */
 void rgbSet(uint8_t index, uint32_t value) {
 #if defined(SIMPAD_V2)
     RGBS[index][1][0] = (value >> 16) & 0xFF;
@@ -57,6 +67,7 @@ void rgbSet(uint8_t index, uint32_t value) {
 #endif
 }
 
+/* -------- 总线式LED驱动 -------- */
 #if !defined(SIMPAD_V2)
 void __ws_rst() {
     LED = 0;
@@ -97,10 +108,14 @@ void rgbPush() {
     E_DIS = 0;
 #endif
 }
+/* -------- 总线式LED驱动 -------- */
 
-static __xdata RGBConfig fadeConfig[LED_COUNT];
-volatile uint16_i fadeLength = 0;
+static __xdata RGBConfig fadeConfig[LED_COUNT]; // 渐变配置
+volatile uint16_i fadeLength = 0;               // 渐变时间缓存
 
+/*
+ * 设置LED颜色，对指令集暴露的接口
+ */
 void rgbSetLed(uint16_t index, uint16_t value) {
     uint8_t i = index & 0xFF;
     fadeConfig[i].mode = LEDNone;
@@ -111,12 +126,18 @@ void rgbSetLed(uint16_t index, uint16_t value) {
     rgbSet(i, fadeConfig[i].nodes[0].color);
 }
 
+/*
+ * 设置LED渐变时间缓存
+ */
 void rgbSetTime(uint16_t time) {
     fadeLength = time;
 }
 
 #define CFG(i) (fadeConfig[i])
 
+/*
+ * 添加LED渐变节点
+ */
 void rgbAddFade(uint16_t index, uint16_t value) {
     uint8_t i = index & 0xFF;
     uint8_t len = CFG(i).length;
@@ -127,16 +148,25 @@ void rgbAddFade(uint16_t index, uint16_t value) {
         CFG(i).length = 0;
 }
 
+/*
+ * 设置LED触发模式
+ */
 void rgbSetTrig(uint16_t index, uint16_t value) {
     uint8_t i = index & 0xFF;
     CFG(i).trig = value & 0xFF;
 }
 
+/*
+ * 设置LED显示模式
+ */
 void rgbSetMode(uint16_t index, uint16_t value) {
     uint8_t i = index & 0xFF;
     CFG(i).mode = (LEDMode) (value & 0xFF);
 }
 
+/*
+ * 彩虹灯光效果
+ */
 uint32_t __rgb__rainbow(uint8_t step, uint8_t count) {
     switch (step) {
     case 0:
@@ -156,6 +186,9 @@ uint32_t __rgb__rainbow(uint8_t step, uint8_t count) {
     }
 }
 
+/*
+ * 获取LED触发按键状态
+ */
 __bit __rgb_key(uint8_t i) {
     switch (i) {
 #if (KEY_COUNT >= 1)
@@ -184,6 +217,9 @@ __bit __rgb_key(uint8_t i) {
     return 0;
 }
 
+/*
+ * 获取LED触发状态
+ */
 __bit __rgb__trig(uint8_t index) {
     for (uint8_t i = 0; i < KEY_COUNT; i++) {
         if (CFG(index).trig & (0x01 << i)) {
@@ -194,12 +230,15 @@ __bit __rgb__trig(uint8_t index) {
     return 0;
 }
 
-volatile uint8_i trigCtl = 0, trigSte = 0;
-volatile uint32_i prevTickCount = 0;
+volatile uint8_i trigCtl = 0, trigSte = 0;  // 触发控制及触发状态
+volatile uint32_i prevTickCount = 0;        // 前一刻
 
 #define NODE(i, j) (CFG(i).nodes[CFG(i).step + (j)])
 
 #if defined(RGB_USE_GRAD_LIST) && !defined(RGB_GRAD_LIST_LITE)
+/*
+ * 单通道色彩插值
+ */
 uint8_t __rgb__inter(uint8_t index, uint8_t input, int16_t total, uint16_t time) {
     int8_t sign = total > 0 ? 1 : -1;
     uint8_t d = (uint16_t) (sign * total) / time;
@@ -216,6 +255,9 @@ uint8_t __rgb__inter(uint8_t index, uint8_t input, int16_t total, uint16_t time)
 }
 #endif
 
+/*
+ * 执行彩虹渐变
+ */
 void __rgb__perform_rgb(uint8_t i) {
     uint32_t c = __rgb__rainbow(CFG(i).step, CFG(i).count);
     rgbSet(i, c);
@@ -224,6 +266,9 @@ void __rgb__perform_rgb(uint8_t i) {
     CFG(i).count += 1;
 }
 
+/*
+ * 执行逆向彩虹渐变
+ */
 void __rgb__perform_bgr(uint8_t i) {
     uint32_t c = __rgb__rainbow(CFG(i).step, CFG(i).count);
     rgbSet(i, c);
@@ -232,6 +277,9 @@ void __rgb__perform_bgr(uint8_t i) {
     CFG(i).count -= 1;
 }
 
+/*
+ * 刷新触发状态
+ */
 void __rgb__perform_trig(uint8_t trig, uint8_t pos, uint8_t v) {
     if (trig && (trigSte & pos) == 0) {
         trigSte |= pos;
@@ -244,6 +292,9 @@ void __rgb__perform_trig(uint8_t trig, uint8_t pos, uint8_t v) {
     }
 }
 
+/*
+ * LED灯光更新
+ */
 void rgbUpdate() {
     uint32_t c = 0, cn = 0;
     uint8_t tmp, trig;
