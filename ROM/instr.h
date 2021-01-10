@@ -10,7 +10,7 @@
 
 #ifdef INSTR_ENB_STRP
 #define SHIFT 0x80
-static uint8_c _asciimap[128] = {
+static uint8_c _asciimap[128] = {	// 模拟字符串输入用的查找表
 	0x00,             // NUL
 	0x00,             // SOH
 	0x00,             // STX
@@ -143,21 +143,30 @@ static uint8_c _asciimap[128] = {
 };
 #endif
 
-volatile uint8_t out_ptr = 0;
+volatile uint8_t out_ptr = 0;	// HID发送缓冲区指针
 volatile __bit dummy;
-#define DUMMY_THING(op) (dummy = op->type_dst_expr != 0)
+#define DUMMY_THING(op) (dummy = op->type_dst_expr != 0)	// 避免编译器警告
 
+/*
+ * 空指令
+ */
 cvm_ret __instr_nop(CVM_OP* op) {
     __asm__("nop");
     DUMMY_THING(op);
     return CVM_RET_OK;
 }
 
+/*
+ * 直接跳转指令
+ */
 cvm_ret __instr_jmp(CVM_OP* op) {
     cvm_jmp(op->dst);
     return CVM_RET_OK;
 }
 
+/*
+ * 清空HID发送缓冲区
+ */
 cvm_ret __instr_clr(CVM_OP* op) {
 	for (uint8_t i = 0; i < HID_BUF; i++)
         setHIDData(i, 0);
@@ -166,18 +175,27 @@ cvm_ret __instr_clr(CVM_OP* op) {
     return CVM_RET_OK;
 }
 
+/*
+ * 向HID发送缓冲区写入一个字节
+ */
 cvm_ret __instr_prt(CVM_OP* op) {
     setHIDData(out_ptr, op->type_dst_expr);
     out_ptr += 1;
     return CVM_RET_OK;
 }
 
+/*
+ * 将HID发送缓冲区内的数据上传
+ */
 cvm_ret __instr_hidp(CVM_OP* op) {
     pushHIDData();
     DUMMY_THING(op);
     return __instr_clr(op);
 }
 
+/*
+ * 将HID接收缓冲区内的数据看作字符串并模拟按键输入
+ */
 cvm_ret __instr_strp(CVM_OP* op) {
     uint8_t t = op->type_dst_expr;
 #ifdef INSTR_ENB_STRP
@@ -202,67 +220,106 @@ cvm_ret __instr_strp(CVM_OP* op) {
     return CVM_RET_OK;
 }
 
+/*
+ * 设置键值
+ */
 cvm_ret __instr_out(CVM_OP* op) {
     usbSetKeycode(op->type_dst_expr, op->dst);
     return CVM_RET_OK;
 }
 
+/*
+ * 将按键信息上传
+ */
 cvm_ret __instr_keyp(CVM_OP* op) {
     usbPushKeydata();
     DUMMY_THING(op);
     return CVM_RET_OK;
 }
 
+/*
+ * 将内部存储器中的一个字节存入HID发送缓冲区
+ */
 cvm_ret __instr_ldi(CVM_OP* op) {
     setHIDData(op->type_dst_expr, romRead8i(op->dst));
     return CVM_RET_OK;
 }
 
+/*
+ * 将外部存储器中的一个字节存入HID发送缓冲区
+ */
 cvm_ret __instr_lde(CVM_OP* op) {
     setHIDData(op->type_dst_expr, romRead8e(op->dst));
     return CVM_RET_OK;
 }
 
+/*
+ * 将一个字节存入内部存储器
+ */
 cvm_ret __instr_wri(CVM_OP* op) {
     romWrite8i(op->dst, op->type_dst_expr);
     return CVM_RET_OK;
 }
 
+/*
+ * 将一个字节存入外部存储器
+ */
 cvm_ret __instr_wre(CVM_OP* op) {
     romWrite8e(op->dst, op->type_dst_expr);
     return CVM_RET_OK;
 }
 
+/*
+ * 延时一段时间，单位为毫秒
+ */
 cvm_ret __instr_sleep(CVM_OP* op) {
     delay(op->dst); //TODO
     return CVM_RET_OK;
 }
 
+/*
+ * 设置LED的颜色
+ */
 cvm_ret __instr_led(CVM_OP* op) {
     rgbSetLed(op->dst, op->src);
     return CVM_RET_OK;
 }
 
+/*
+ * 设置LED渐变时间
+ */
 cvm_ret __instr_time(CVM_OP* op) {
     rgbSetTime(op->dst);
     return CVM_RET_OK;
 }
 
+/*
+ * 添加LED渐变节点
+ */
 cvm_ret __instr_fade(CVM_OP* op) {
     rgbAddFade(op->dst, op->src);
     return CVM_RET_OK;
 }
 
+/*
+ * 设置LED触发模式
+ */
 cvm_ret __instr_trig(CVM_OP* op) {
     rgbSetTrig(op->type_dst_expr, op->dst);
     return CVM_RET_OK;
 }
 
+/*
+ * 设置LED显示模式
+ */
 cvm_ret __instr_rgb(CVM_OP* op) {
     rgbSetMode(op->type_dst_expr, op->dst);
     return CVM_RET_OK;
 }
 
+/*
+ * 系统软复位
+ */
 cvm_ret __instr_sysrst(CVM_OP* op) {
     if (op->type_dst_expr == 0x55 && op->dst == 0xAA55) {
 		EA = 0;
@@ -274,6 +331,9 @@ cvm_ret __instr_sysrst(CVM_OP* op) {
     return CVM_RET_ERR;
 }
 
+/*
+ * 从存储器中重载配置
+ */
 cvm_ret __instr_reload(CVM_OP* op) {
     if (op->type_dst_expr == 0xAA && op->dst == 0x55AA) {
         sysLoadConfig();
@@ -282,8 +342,11 @@ cvm_ret __instr_reload(CVM_OP* op) {
     return CVM_RET_ERR;
 }
 
-volatile void (*__iap_main)() = 0x3000;
+volatile void (*__iap_main)() = 0x3000;	// IAP程序入口点
 
+/*
+ * 启动IAP程序
+ */
 cvm_ret __instr_iap(CVM_OP* op) {
     if (op->type_dst_expr == 0x5A && op->dst == 0xA55A) {
         __iap_main();

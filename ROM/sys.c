@@ -6,9 +6,12 @@
 
 #include <string.h>
 
-volatile uint32_i sysTickCount = 0;
-static __xdata SysConfig sysConfig;
+volatile uint32_i sysTickCount = 0; // 系统刻计数器
+static __xdata SysConfig sysConfig; // 系统配置存储
 
+/*
+ * 系统时钟配置
+ */
 void sysClockConfig() {
     SAFE_MOD = 0x55;
     SAFE_MOD = 0xAA;
@@ -52,6 +55,9 @@ void sysClockConfig() {
     SAFE_MOD = 0x00;
 }
 
+/*
+ * 微秒延时
+ */
 void delay_us(uint16_t n) {
 #ifdef	FREQ_SYS
 #if		FREQ_SYS <= 6000000
@@ -90,6 +96,9 @@ void delay_us(uint16_t n) {
 	}
 }
 
+/*
+ * 毫秒延时
+ */
 void delay(uint16_t n) {
 	while (n) {
         delay_us(1000);
@@ -97,6 +106,10 @@ void delay(uint16_t n) {
 	}
 }
 
+/*
+ * 刻计数器更新中断
+ * 需要注意的是，非总线LED驱动也使用此中断，这种情况下刻计数器更新在 rgb.c 内实现
+ */
 #if !defined(SIMPAD_V2)
 void __tim2Interrupt() __interrupt (INT_NO_TMR2) __using (2) {
     if (TF2) {
@@ -106,6 +119,9 @@ void __tim2Interrupt() __interrupt (INT_NO_TMR2) __using (2) {
 }
 #endif
 
+/*
+ * 系统刻计数初始化
+ */
 void sysTickConfig() {
 #if !defined(SIMPAD_V2)
     T2MOD &= ~bT2_CLK; C_T2 = 0;
@@ -115,10 +131,16 @@ void sysTickConfig() {
 #endif
 }
 
+/*
+ * 获取当前刻
+ */
 uint32_t sysGetTickCount() {
     return sysTickCount;
 }
 
+/*
+ * 通过RGB565数据和一个字节的扩展数据得到完整的RGB888
+ */
 uint32_t sysGetRGB(uint16_t color, uint8_t extend) {
     uint32_t val = 0;
     val = ((uint32_t) ((color & 0xF800) | ((extend & 0xE0) << 3))) << 8;
@@ -130,6 +152,9 @@ uint32_t sysGetRGB(uint16_t color, uint8_t extend) {
 #define KEY_CFG(i)  (sysConfig.keyConfig[i])
 #define LED_CFG(i)  (sysConfig.ledConfig[i])
 
+/*
+ * 加载系统配置
+ */
 void sysLoadConfig() {
     memset(&sysConfig, 0x00, sizeof(SysConfig));
 
@@ -173,6 +198,9 @@ void sysLoadConfig() {
     }
 }
 
+/*
+ * 获取系统配置指针
+ */
 SysConfig* sysGetConfig() {
     return &sysConfig;
 }
