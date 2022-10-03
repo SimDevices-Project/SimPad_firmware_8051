@@ -1,3 +1,5 @@
+# [New Depository 新仓库](https://github.com/SimDevices-Project/Firmware_8051)
+
 # SimPad 基于 8051 架构的产品固件
 
 ![License AGPL-3.0](https://img.shields.io/github/license/iamapig120/SimPad_firmware_8051.svg)
